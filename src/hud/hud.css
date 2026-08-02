@@ -1,0 +1,262 @@
+:root {
+  --ink: rgba(236, 240, 248, 0.94);
+  --ink-dim: rgba(236, 240, 248, 0.55);
+  --ink-faint: rgba(236, 240, 248, 0.28);
+  --rule: rgba(236, 240, 248, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #05060a;
+  color: var(--ink);
+  font-family: ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-fade {
+  transition: opacity 900ms ease;
+}
+
+#hud.idle .hud-fade {
+  opacity: 0.12;
+}
+
+/* ---------- bottom-left readout ---------- */
+
+.readout {
+  position: absolute;
+  left: clamp(16px, 3vw, 40px);
+  bottom: clamp(16px, 3.5vh, 40px);
+  max-width: min(46ch, 60vw);
+}
+
+.readout .scale {
+  font-size: clamp(28px, 4.4vw, 54px);
+  font-weight: 250;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.readout .stage {
+  font-size: clamp(11px, 1.15vw, 13px);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+
+.readout .stage .index {
+  color: var(--ink-faint);
+  margin-right: 8px;
+}
+
+.readout .caption {
+  font-size: clamp(12px, 1.25vw, 14px);
+  line-height: 1.45;
+  color: var(--ink-dim);
+  font-weight: 300;
+  min-height: 2.9em;
+}
+
+.readout .speculative {
+  display: none;
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #ffcf70;
+  border: 1px solid rgba(255, 207, 112, 0.4);
+  border-radius: 3px;
+  padding: 5px 9px;
+}
+
+.readout.is-speculative .speculative {
+  display: inline-block;
+}
+
+/* ---------- right-hand depth bar ---------- */
+
+.depth {
+  position: absolute;
+  right: clamp(16px, 2.6vw, 36px);
+  top: 50%;
+  transform: translateY(-50%);
+  height: min(62vh, 560px);
+  width: 84px;
+  display: flex;
+  align-items: stretch;
+}
+
+.depth .track {
+  position: relative;
+  width: 2px;
+  background: var(--rule);
+  margin-left: auto;
+  margin-right: 9px;
+}
+
+.depth .fill {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: 0;
+  background: linear-gradient(180deg, rgba(120, 190, 255, 0.15), rgba(150, 210, 255, 0.85));
+  height: 0;
+}
+
+.depth .marker {
+  position: absolute;
+  left: -7px;
+  width: 16px;
+  height: 1px;
+  background: var(--ink);
+  top: 0;
+}
+
+.depth .marker::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.depth .ticks {
+  position: relative;
+  flex: 1;
+  order: -1;
+}
+
+.depth .tick {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  height: 1px;
+}
+
+/* Every band gets a dash; only the current one gets a readable label, because
+   the bar is linear in log space and bands 1-10 share its top third. */
+.depth .tick::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 0;
+  width: 4px;
+  height: 1px;
+  background: var(--ink-faint);
+}
+
+.depth .tick .label {
+  position: absolute;
+  right: 4px;
+  top: -0.72em;
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.depth .tick.active {
+  color: var(--ink);
+}
+
+.depth .tick.active::after {
+  background: var(--ink);
+  width: 7px;
+}
+
+.depth .tick.active .label {
+  opacity: 1;
+}
+
+/* ---------- dev overlays ---------- */
+
+.stats {
+  position: absolute;
+  right: clamp(16px, 2.6vw, 36px);
+  top: clamp(14px, 2.4vh, 24px);
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink-faint);
+}
+
+.stats .info {
+  white-space: pre-line;
+}
+
+.stats .fps.warn {
+  color: #ff9a6a;
+}
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(16px, 3.5vh, 40px);
+  transform: translateX(-50%);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: center;
+  transition: opacity 1200ms ease;
+}
+
+.toast {
+  position: absolute;
+  left: 50%;
+  top: clamp(16px, 4vh, 40px);
+  transform: translateX(-50%);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  background: rgba(8, 10, 16, 0.65);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 6px 12px;
+  opacity: 0;
+  transition: opacity 350ms ease;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+#hud.hidden {
+  opacity: 0;
+}
