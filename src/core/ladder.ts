@@ -1,5 +1,9 @@
 import type { BandDef } from './types.ts';
 import { makePlaceholderBand } from '../bands/placeholder.ts';
+import { makeRoomBand } from '../bands/b01-room.ts';
+import { makeCheekBand } from '../bands/b02-cheek.ts';
+import { makePoresBand } from '../bands/b03-pores.ts';
+import { makeDemodexBand } from '../bands/b04-demodex.ts';
 
 /**
  * THE ZOOM LADDER
@@ -31,19 +35,17 @@ import { makePlaceholderBand } from '../bands/placeholder.ts';
  * covers 17 decades without a single precision artefact.
  */
 
-const M = Math.log10;
-
 export const LADDER: BandDef[] = [
   {
     index: 1,
     id: 'room',
     name: 'The room',
-    caption: 'A 1.8 m adult male, standing. The camera starts 1.5 m (5 ft) from his face.',
-    logTop: M(3),
-    logBot: M(0.1),
+    caption: 'A 1.8 m adult male, standing in a plain room. The camera opens 1.5 m — five feet — from his face.',
+    logTop: 0.35,
+    logBot: -1.0,
     localTopWidth: 60,
-    localSpan: M(3) - M(0.1),
-    build: makePlaceholderBand,
+    localSpan: 1.35,
+    build: makeRoomBand,
   },
   {
     index: 2,
@@ -54,7 +56,7 @@ export const LADDER: BandDef[] = [
     logBot: -3.0,
     localTopWidth: 60,
     localSpan: 2.25,
-    build: makePlaceholderBand,
+    build: makeCheekBand,
   },
   {
     index: 3,
@@ -65,7 +67,7 @@ export const LADDER: BandDef[] = [
     logBot: -3.7,
     localTopWidth: 60,
     localSpan: 0.95,
-    build: makePlaceholderBand,
+    build: makePoresBand,
   },
   {
     index: 4,
@@ -76,7 +78,7 @@ export const LADDER: BandDef[] = [
     logBot: -4.3,
     localTopWidth: 60,
     localSpan: 0.85,
-    build: makePlaceholderBand,
+    build: makeDemodexBand,
   },
   {
     index: 5,
@@ -182,6 +184,15 @@ export const LADDER: BandDef[] = [
     build: makePlaceholderBand,
   },
 ];
+
+/**
+ * `?placeholder=1` swaps every band back to the Phase 1 stand-in geometry.
+ * That rig is built to make any flaw in a band hand-off obvious, so it stays
+ * available as a diagnostic even now that the real art exists.
+ */
+if (typeof location !== 'undefined' && new URLSearchParams(location.search).has('placeholder')) {
+  for (const b of LADDER) b.build = makePlaceholderBand;
+}
 
 export const LOG_MAX = LADDER[0].logTop;
 export const LOG_MIN = LADDER[LADDER.length - 1].logBot;

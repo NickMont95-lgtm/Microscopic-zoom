@@ -4,7 +4,7 @@
  */
 
 /** log10(metres) at the very top of the descent — the widest shot of the room. */
-export const SURFACE_LOG = Math.log10(3);
+export const SURFACE_LOG = 0.35;
 
 /**
  * Where a wrapping band's dolly window starts.

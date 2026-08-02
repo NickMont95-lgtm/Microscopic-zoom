@@ -55,6 +55,8 @@ const input = new Input(canvas, {
 input.targetLog = LOG_MAX;
 
 function pickInitialQuality(): QualityLevel {
+  const forced = new URLSearchParams(location.search).get('q');
+  if (forced === 'low' || forced === 'medium' || forced === 'high') return forced;
   const dpr = window.devicePixelRatio || 1;
   const cores = navigator.hardwareConcurrency ?? 4;
   if (cores <= 4 && dpr > 1.5) return 'medium';
