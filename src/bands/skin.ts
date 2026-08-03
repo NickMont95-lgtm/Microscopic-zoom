@@ -185,9 +185,11 @@ export interface SkinPatchOptions {
 }
 
 export interface SkinPatch {
+  /** Add this to the scene, not `mesh` — it carries the tilt. */
+  group: THREE.Group;
   mesh: THREE.Mesh;
   material: THREE.MeshStandardMaterial;
-  update(frame: BandFrame): void;
+  update(frame: BandFrame, camera: THREE.Camera): void;
   dispose(): void;
 }
 
@@ -303,21 +305,50 @@ export function makeSkinPatch(opts: SkinPatchOptions): SkinPatch {
 
   const mesh = new THREE.Mesh(geo, material);
   mesh.frustumCulled = false;
-  if (opts.tilt) {
-    mesh.rotation.y = opts.tilt;
-  }
+  // The tilt lives on a parent group so the mesh's own local XY stays aligned
+  // with the field, which is what lets the patch slide under the camera.
+  const group = new THREE.Group();
+  group.rotation.y = opts.tilt ?? 0;
+  group.add(mesh);
 
   const coverage = opts.coverage ?? 2.2;
+  const baseCentre = new THREE.Vector2(opts.centre?.[0] ?? 0, opts.centre?.[1] ?? 0);
+  const _look = new THREE.Vector3();
+  const _fwd = new THREE.Vector3();
 
-  function update(frame: BandFrame): void {
+  function update(frame: BandFrame, camera: THREE.Camera): void {
     const mpu = metresPerUnit(frame);
+    const localPerMetre = 1 / mpu;
     // Patch half-width in metres, tracking the current framing.
     const halfMetres = frame.metresVisible * coverage * 0.5;
     uniforms.uPatchMetres.value = halfMetres;
-    uniforms.uLocalPerMetre.value = 1 / mpu;
+    uniforms.uLocalPerMetre.value = localPerMetre;
     // Screen pixels are not known here, so approximate: a 1600-pixel-wide view.
     uniforms.uPixelMetres.value = frame.metresVisible / 1600;
     uniforms.uBreath.value = Math.sin(frame.elapsed * 2 * Math.PI * (14 / 60));
+
+    // Slide the drawn window so it is always centred on what the camera is
+    // LOOKING AT, not on where the camera is.
+    //
+    // Without this the patch is a fixed rectangle around the field origin and
+    // any rail drift runs off its edge — a hard straight cut across the picture
+    // with nothing beyond it. Centring on the camera instead is not enough
+    // either: the surface is viewed at a raking angle, so the footprint the
+    // camera actually sees is well forward of the point directly beneath it.
+    // The compensating mesh offset means the SURFACE never moves; only the
+    // window onto it does.
+    camera.getWorldDirection(_fwd);
+    _look.copy(camera.position).addScaledVector(_fwd, frame.focusDistance);
+    group.updateWorldMatrix(true, false);
+    group.worldToLocal(_look);
+    const cx = baseCentre.x + _look.x * mpu;
+    const cy = baseCentre.y + _look.y * mpu;
+    uniforms.uPatchCentre.value.set(cx, cy);
+    mesh.position.set(
+      (cx - baseCentre.x) * localPerMetre,
+      (cy - baseCentre.y) * localPerMetre,
+      0,
+    );
   }
 
   function dispose(): void {
@@ -325,7 +356,7 @@ export function makeSkinPatch(opts: SkinPatchOptions): SkinPatch {
     material.dispose();
   }
 
-  return { mesh, material, update, dispose };
+  return { group, mesh, material, update, dispose };
 }
 
 /**

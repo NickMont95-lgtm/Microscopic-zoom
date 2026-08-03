@@ -23,7 +23,7 @@ export function makePoresBand(ctx: BandContext): BandInstance {
   const { quality } = ctx;
 
   const rail = makeRail([
-    { p: [0.00022 * L, 0.00014 * L, 0.00004 * L] },
+    { p: [0.00030 * L, 0.00019 * L, 0.00004 * L] },
     { p: [0.00008 * L, 0.00005 * L, 0.00001 * L], roll: 0.02 },
     { p: [0.00002 * L, 0.00001 * L, -0.00002 * L] },
     { p: [0, 0, -0.00006 * L] },
@@ -38,28 +38,28 @@ export function makePoresBand(ctx: BandContext): BandInstance {
     keyColor: 0xfff0dd,
     fillColor: 0xffd9c6,
     rimColor: 0xcfe0ff,
-    keyPower: 4.6,
-    fillPower: 1.2,
-    rimPower: 1.5,
+    keyPower: 20.0,
+    fillPower: 5.0,
+    rimPower: 4.5,
     keyOffset: [1.4, 1.0, 0.30],
     fillOffset: [-1.1, -0.8, 0.45],
     rimOffset: [-0.4, 1.2, -0.6],
     hemiSky: 0x6b5148,
     hemiGround: 0x180f0e,
-    hemiPower: 0.55,
+    hemiPower: 1.1,
   });
   const { scene } = sc;
 
   const skin = makeSkinPatch({
     quality,
-    coverage: 2.8,
+    coverage: 4.0,
     centre: [0.0031, -0.0017],
     tilt: TILT,
-    color: 0xd6a894,
+    color: 0xd3a893,
     roughness: 0.5,
     sebum: 0.85,
   });
-  scene.add(skin.mesh);
+  scene.add(skin.group);
 
   // A few vellus hairs still cross frame at the top of this band.
   const vellus = makeHairField({
@@ -127,9 +127,9 @@ export function makePoresBand(ctx: BandContext): BandInstance {
 
   function update(frame: BandFrame): void {
     sc.updateCommon(frame);
-    skin.update(frame);
+    skin.update(frame, sc.camera);
     vellus.update(frame.elapsed);
-    vellusGroup.visible = frame.metresVisible > 0.00035;
+    vellusGroup.visible = frame.metresVisible < 0.0016 && frame.metresVisible > 0.00035;
 
     const t = frame.elapsed;
     for (let i = 0; i < FLAKES; i++) {

@@ -26,10 +26,12 @@ const TILT = 0.60; // radians, ~34 degrees
 export function makeCheekBand(ctx: BandContext): BandInstance {
   const { quality } = ctx;
 
+  // Drift is deliberately a small fraction of the frame width. A rail that
+  // wanders as far as the band's own top framing would leave the subject.
   const rail = makeRail([
-    { p: [0.16 * L, 0.10 * L, 0.02 * L] },
-    { p: [0.05 * L, 0.03 * L, 0.006 * L], roll: 0.03 },
-    { p: [0.008 * L, 0.004 * L, 0.001 * L], roll: 0.01 },
+    { p: [0.030 * L, 0.019 * L, 0.004 * L] },
+    { p: [0.010 * L, 0.006 * L, 0.001 * L], roll: 0.03 },
+    { p: [0.0018 * L, 0.001 * L, 0], roll: 0.01 },
     { p: [0, 0, 0] },
   ]);
 
@@ -42,28 +44,28 @@ export function makeCheekBand(ctx: BandContext): BandInstance {
     keyColor: 0xfff0dd,
     fillColor: 0xffd9c4,
     rimColor: 0xd8e6ff,
-    keyPower: 4.2,
-    fillPower: 1.1,
-    rimPower: 1.6,
+    keyPower: 22.0,
+    fillPower: 5.5,
+    rimPower: 5.0,
     // Grazing key light. Everything about skin texture depends on this.
     keyOffset: [1.5, 0.9, 0.28],
     fillOffset: [-1.2, -0.7, 0.5],
     rimOffset: [-0.3, 1.4, -0.7],
     hemiSky: 0x6b5148,
     hemiGround: 0x1a1010,
-    hemiPower: 0.55,
+    hemiPower: 1.15,
   });
   const { scene } = sc;
 
   const skin = makeSkinPatch({
     quality,
-    coverage: 2.6,
+    coverage: 4.0,
     centre: [0.0031, -0.0017],
     tilt: TILT,
-    color: 0xd6a894,
+    color: 0xd3a893,
     roughness: 0.55,
   });
-  scene.add(skin.mesh);
+  scene.add(skin.group);
 
   // ---- hair --------------------------------------------------------------
   // Terminal beard hair: 60-120 µm across, several mm long, growing obliquely.
@@ -107,15 +109,17 @@ export function makeCheekBand(ctx: BandContext): BandInstance {
 
   function update(frame: BandFrame): void {
     sc.updateCommon(frame);
-    skin.update(frame);
+    skin.update(frame, sc.camera);
     beard.update(frame.elapsed);
     vellus.update(frame.elapsed);
 
-    // Fade the beard mass out once we are past its scale, so it does not become
-    // a forest of tree trunks around a single pore.
-    const beardVis = frame.metresVisible > 0.0025;
-    beardGroup.visible = beardVis;
-    vellusGroup.visible = frame.metresVisible > 0.0004;
+    // A hair only reads as a hair between about two pixels and a third of the
+    // frame. Above that a 90 µm shaft is sub-pixel and aliases into a hard black
+    // scratch; below it, it becomes a tree trunk beside a single pore. Both
+    // ends are gated, and the upper gate also helps the band 1 hand-off, since
+    // the cheek we arrive on is bare skin above the beard line.
+    beardGroup.visible = frame.metresVisible < 0.030 && frame.metresVisible > 0.0025;
+    vellusGroup.visible = frame.metresVisible < 0.006 && frame.metresVisible > 0.0004;
   }
 
   function dispose(): void {

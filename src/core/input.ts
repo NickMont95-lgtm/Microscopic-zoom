@@ -11,7 +11,11 @@ import { LADDER, LOG_MAX, LOG_MIN, bandCenterLog } from './ladder.ts';
  * decade. Easing in linear space would crawl at the top and blur at the bottom.
  */
 
-const WHEEL_SENS = 0.0016; // decades per pixel of wheel travel
+// Decades per pixel of wheel travel. At a typical 100 px wheel notch this is
+// about a third of a decade per click, so the full 35-decade descent is roughly
+// a hundred notches — long enough to feel like a journey, short enough that
+// getting to the bottom is not a chore.
+const WHEEL_SENS = 0.0035;
 const PINCH_SENS = 0.010; // decades per pixel of ctrl+wheel (trackpad pinch)
 const TOUCH_GAIN = 1.6; // decades per decade of finger separation
 const SMOOTH_TIME = 0.42; // seconds for the spring to mostly arrive

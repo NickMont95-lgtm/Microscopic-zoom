@@ -47,29 +47,29 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
     keyColor: 0xffeedd,
     fillColor: 0xffd0b0,
     rimColor: 0xbcd4ff,
-    keyPower: 4.4,
-    fillPower: 1.3,
-    rimPower: 1.6,
+    keyPower: 18.0,
+    fillPower: 4.5,
+    rimPower: 4.2,
     keyOffset: [0.9, 1.2, 0.5],
     fillOffset: [-1.0, -0.6, 0.35],
     rimOffset: [-0.2, 0.6, -0.9],
     hemiSky: 0x5c4038,
     hemiGround: 0x120b0a,
-    hemiPower: 0.5,
+    hemiPower: 1.0,
   });
   const { scene } = sc;
 
   // ---- skin surface around the mouth ------------------------------------
   const skin = makeSkinPatch({
     quality,
-    coverage: 3.0,
+    coverage: 4.0,
     centre: [0.0031, -0.0017],
     tilt: TILT,
-    color: 0xd6a894,
+    color: 0xd3a893,
     roughness: 0.45,
     sebum: 1.0,
   });
-  scene.add(skin.mesh);
+  scene.add(skin.group);
 
   // ---- the infundibulum --------------------------------------------------
   // A funnel narrowing into a tube, lined with the loosely packed keratinocytes
@@ -180,7 +180,7 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
 
   function update(frame: BandFrame): void {
     sc.updateCommon(frame);
-    skin.update(frame);
+    skin.update(frame, sc.camera);
 
     const t = frame.elapsed;
 
