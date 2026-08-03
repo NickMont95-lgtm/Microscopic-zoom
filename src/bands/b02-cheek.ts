@@ -15,7 +15,7 @@ import { makeHairField, makeSkinPatch, type HairField } from './skin.ts';
  * next two bands.
  */
 
-const METRES_PER_UNIT = Math.pow(10, -0.75) / 60; // ≈ 2.96 mm per local unit
+const METRES_PER_UNIT = Math.pow(10, -0.90) / 60; // ≈ 2.10 mm per local unit
 const L = 1 / METRES_PER_UNIT; // metres → local units
 
 // Beard follicles are oblique, not perpendicular. Tilting the surface by the

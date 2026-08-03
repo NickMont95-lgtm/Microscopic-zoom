@@ -81,7 +81,8 @@ export function makeVoidBand(ctx: BandContext): BandInstance {
         float r = length(vLocal);
         float d = smoothstep(0.35, 1.0, r) * uOpacity;
         d *= 0.75 + 0.25 * sin(vLocal.x * 4.0 + uTime * 0.4) * sin(vLocal.y * 3.0 - uTime * 0.3);
-        gl_FragColor = vec4(vec3(0.35, 0.5, 1.0) * d, d);
+        // Warm, to match the phosphorus cloud band 10 hands over from.
+        gl_FragColor = vec4(vec3(1.0, 0.55, 0.22) * d, d);
       }`,
     uniforms: { uOpacity: { value: 1 }, uTime: { value: 0 } },
     transparent: true,

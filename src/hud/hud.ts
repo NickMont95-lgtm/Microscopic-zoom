@@ -41,6 +41,7 @@ export class Hud {
         <div class="scale">—</div>
         <div class="stage"><span class="index"></span><span class="name"></span></div>
         <div class="caption"></div>
+        <div class="beyond">Beyond visible light — structural model, not a photograph</div>
         <div class="speculative">Speculative visualisation</div>
       </div>
       <div class="depth hud-fade">
@@ -68,7 +69,7 @@ export class Hud {
     for (const def of LADDER) {
       const el = document.createElement('div');
       el.className = 'tick';
-      el.innerHTML = `<span class="label">${def.index} · ${def.name}</span>`;
+      el.title = `${def.index} · ${def.name}`;
       el.style.top = `${this.logToPercent((def.logTop + def.logBot) * 0.5)}%`;
       ticks.appendChild(el);
       this.tickEls.push(el);
@@ -123,11 +124,21 @@ export class Hud {
       this.captionEl.textContent = def.caption;
     }
     this.readoutEl.classList.toggle('is-speculative', def.speculative === true);
+    // Visible light cannot resolve below roughly a quarter of a micron. From
+    // there down nothing on screen is a photograph of anything — it is electron
+    // microscopy and structural models, drawn in conventional colours. Driven
+    // off the scale rather than tagged per band, so it can never disagree with
+    // the readout beside it.
+    this.readoutEl.classList.toggle('is-beyond', status.metresVisible < 250e-9);
 
     const pct = this.logToPercent(status.logScale);
     this.fillEl.style.height = `${pct}%`;
     this.markerEl.style.top = `${pct}%`;
 
+    // The bar carries tick dashes and a position marker, nothing else. Naming
+    // the band here as well was redundant — it is already set in large type in
+    // the readout — and the bar is linear in log space, so bands 1-10 crowd into
+    // its top third where no label is legible anyway.
     for (let i = 0; i < this.tickEls.length; i++) {
       this.tickEls[i].classList.toggle('active', LADDER[i] === def);
     }

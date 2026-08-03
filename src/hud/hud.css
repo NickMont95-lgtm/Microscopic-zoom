@@ -85,6 +85,21 @@ body {
   min-height: 2.9em;
 }
 
+.readout .beyond {
+  display: none;
+  margin-top: 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.07em;
+  color: rgba(150, 200, 255, 0.75);
+  border-left: 2px solid rgba(150, 200, 255, 0.35);
+  padding-left: 8px;
+  line-height: 1.4;
+}
+
+.readout.is-beyond .beyond {
+  display: block;
+}
+
 .readout .speculative {
   display: none;
   margin-top: 10px;
@@ -181,14 +196,6 @@ body {
   background: var(--ink-faint);
 }
 
-.depth .tick .label {
-  position: absolute;
-  right: 4px;
-  top: -0.72em;
-  opacity: 0;
-  transition: opacity 260ms ease;
-}
-
 .depth .tick.active {
   color: var(--ink);
 }
@@ -196,10 +203,6 @@ body {
 .depth .tick.active::after {
   background: var(--ink);
   width: 7px;
-}
-
-.depth .tick.active .label {
-  opacity: 1;
 }
 
 /* ---------- dev overlays ---------- */

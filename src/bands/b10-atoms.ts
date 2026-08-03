@@ -166,6 +166,8 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
       color: new THREE.Color(spec.color).convertSRGBToLinear(),
       roughness: 0.3,
       emissive: new THREE.Color(spec.color).convertSRGBToLinear().multiplyScalar(0.25),
+      transparent: true,
+      opacity: 1,
     });
     const core = new THREE.Mesh(coreGeo, coreMat);
     core.position.copy(p);
@@ -245,6 +247,16 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
     sc.updateCommon(frame);
     const t = frame.elapsed;
 
+    // Taper the electron density toward the bottom of the band.
+    //
+    // Band 11 opens on the atomic void, which is nearly black. Band 10 ends on
+    // additive electron clouds, which are bright. A dissolve between a bright
+    // image and a dark one changes brightness no matter how well the geometry
+    // lines up, so this band dims into the hand-off rather than being cut away
+    // from at full strength. It is also the physically right direction: heading
+    // inward from the cloud toward the nucleus, the density really does fall.
+    const taper = 1 - smoothstep01(0.55, 1.0, frame.u);
+
     // Thermal vibration. Bond stretching runs at tens of terahertz in reality;
     // slowed by many orders of magnitude here so it reads as a jitter rather
     // than as a blur. Amplitude is roughly right: a few picometres.
@@ -258,6 +270,7 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
       cores[i].position.copy(live[i]);
       clouds[i].position.copy(live[i]);
       cloudMats[i].uniforms.uTime.value = t;
+      cloudMats[i].uniforms.uDensity.value = 0.85 * taper;
     }
 
     for (let i = 0; i < bonds.length; i++) {
@@ -285,6 +298,14 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
       water.setMatrixAt(i, dummy.matrix);
     }
     water.instanceMatrix.needsUpdate = true;
+    waterMat.opacity = 0.22 * taper;
+    water.visible = taper > 0.02;
+    bondMat.opacity = 0.55 * taper;
+    for (const m of coreMats) {
+      m.emissiveIntensity = taper;
+      m.opacity = taper;
+    }
+    atomGroup.visible = taper > 0.02;
 
     atomGroup.rotation.y = Math.sin(t * 0.05) * 0.08;
   }
@@ -310,4 +331,9 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
     update,
     dispose,
   };
+}
+
+function smoothstep01(a: number, b: number, x: number): number {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
 }
