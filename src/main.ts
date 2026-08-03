@@ -35,6 +35,12 @@ renderer.toneMappingExposure = 1.0;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.autoClear = false;
 
+/** Set when the viewer picks a quality level explicitly, which disables the
+ *  automatic degrade for the rest of the session. Declared here because
+ *  pickInitialQuality() assigns it during module initialisation, and a `let`
+ *  further down the file would still be in its temporal dead zone. */
+let userChoseQuality = false;
+
 let qualityLevel: QualityLevel = pickInitialQuality();
 let quality = QUALITY_PRESETS[qualityLevel];
 
@@ -56,11 +62,13 @@ input.targetLog = LOG_MAX;
 
 function pickInitialQuality(): QualityLevel {
   const forced = new URLSearchParams(location.search).get('q');
-  if (forced === 'low' || forced === 'medium' || forced === 'high') return forced;
-  const dpr = window.devicePixelRatio || 1;
+  if (forced === 'low' || forced === 'medium' || forced === 'high' || forced === 'ultra') {
+    userChoseQuality = true;
+    return forced;
+  }
   const cores = navigator.hardwareConcurrency ?? 4;
-  if (cores <= 4 && dpr > 1.5) return 'medium';
   if (cores <= 2) return 'low';
+  if (cores <= 4) return 'medium';
   return 'high';
 }
 
@@ -74,7 +82,9 @@ function applyQuality(level: QualityLevel): void {
 }
 
 function cycleQuality(): void {
-  const order: QualityLevel[] = ['low', 'medium', 'high'];
+  // Choosing by hand switches off the automatic degrade for the session.
+  userChoseQuality = true;
+  const order: QualityLevel[] = ['low', 'medium', 'high', 'ultra'];
   applyQuality(order[(order.indexOf(qualityLevel) + 1) % order.length]);
 }
 
@@ -92,21 +102,51 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, quality.maxPixelRa
 resize();
 
 // --- adaptive quality ------------------------------------------------------
-// Degrade instance counts and resolution before we degrade frame rate, exactly
-// once in each direction, and never while the user is actively scrolling.
+/**
+ * Degrade only on sustained, serious trouble.
+ *
+ * The previous threshold — any four-second window averaging 45 fps or less —
+ * was far too eager. A machine holding a steady 60 and dipping to 45 during a
+ * band hand-off would be permanently downgraded to medium on its first dip,
+ * and the user would then be looking at reduced geometry and a 1.5x pixel-ratio
+ * cap for the rest of the session with no indication anything had happened.
+ *
+ * A dip is not distress. This now needs TWO consecutive five-second windows
+ * below 30 fps, ignores the first eight seconds while shaders compile and the
+ * opening bands build, and never fires if the user has chosen a level by hand.
+ */
+const DEGRADE_BELOW_FPS = 30;
+const DEGRADE_WINDOW_S = 5;
+const DEGRADE_GRACE_S = 8;
+
 let perfWindow = 0;
 let perfFrames = 0;
+let elapsedTotal = 0;
+let badWindows = 0;
 let autoDegradedTo: QualityLevel | null = null;
 
 function trackPerformance(dt: number): void {
+  elapsedTotal += dt;
   perfWindow += dt;
   perfFrames++;
-  if (perfWindow < 4) return;
+  if (perfWindow < DEGRADE_WINDOW_S) return;
+
   const fps = perfFrames / perfWindow;
   perfWindow = 0;
   perfFrames = 0;
-  if (fps > 45 || autoDegradedTo !== null) return;
-  if (qualityLevel === 'high') {
+
+  if (elapsedTotal < DEGRADE_GRACE_S || userChoseQuality || autoDegradedTo !== null) return;
+
+  if (fps >= DEGRADE_BELOW_FPS) {
+    badWindows = 0;
+    return;
+  }
+  if (++badWindows < 2) return;
+
+  if (qualityLevel === 'ultra') {
+    autoDegradedTo = 'high';
+    applyQuality('high');
+  } else if (qualityLevel === 'high') {
     autoDegradedTo = 'medium';
     applyQuality('medium');
   } else if (qualityLevel === 'medium') {

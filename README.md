@@ -46,7 +46,7 @@ five years). Nothing is downloaded at runtime; there is no backend.
 | `[` `]` | Step one band up / down |
 | `b` | Jump to the nearest band boundary — parks you in the middle of a cross-fade |
 | `k` | Seam debug: tints the two live bands red and cyan so you can see the hand-off |
-| `g` | Cycle quality: high → low → medium |
+| `g` | Cycle quality: low → medium → high → ultra |
 | `h` | Hide / show the HUD |
 | `f` | Toggle the FPS counter |
 | `i` | Invert scroll direction |
@@ -54,8 +54,13 @@ five years). Nothing is downloaded at runtime; there is no backend.
 
 There are two URL flags, both for testing:
 
-- `?q=low` / `?q=medium` / `?q=high` — force a quality preset instead of
-  detecting one.
+- `?q=low` / `?q=medium` / `?q=high` / `?q=ultra` — force a quality preset
+  instead of detecting one. `high` is the default on a machine with more than
+  four cores. `ultra` roughly doubles instance counts again and turns on 8x
+  multisampling; try it if you have frame rate to spare.
+
+  Choosing a level by hand, by URL or with `g`, also switches off the automatic
+  degrade for that session.
 - `?placeholder=1` — swap every band back to the Phase 1 stand-in geometry: a
   self-similar tunnel of rings built specifically to make any flaw in a band
   hand-off obvious. Useful for re-checking the engine after changing art.

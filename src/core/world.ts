@@ -6,6 +6,11 @@ import { clamp, smootherstep } from './mathx.ts';
 import { wrapOrigin } from './constants.ts';
 import type { BandDef, BandFrame, BandInstance, QualitySettings } from './types.ts';
 
+/** Multisample count for the band render targets. */
+function msaaFor(q: QualitySettings): number {
+  return q.level === 'low' ? 0 : q.level === 'ultra' ? 8 : 4;
+}
+
 const UP = new THREE.Vector3(0, 1, 0);
 const MAX_LOOK = THREE.MathUtils.degToRad(15);
 
@@ -67,7 +72,7 @@ export class World {
     private readonly renderer: THREE.WebGLRenderer,
     private quality: QualitySettings,
   ) {
-    this.compositor = new Compositor(renderer, quality.level === 'low' ? 0 : 4);
+    this.compositor = new Compositor(renderer, msaaFor(quality));
   }
 
   setSize(width: number, height: number, pixelRatio: number): void {
@@ -77,7 +82,7 @@ export class World {
 
   setQuality(q: QualitySettings): void {
     this.quality = q;
-    this.compositor.setSamples(q.level === 'low' ? 0 : 4);
+    this.compositor.setSamples(msaaFor(q));
     // Rebuild everything so instance counts and geometry detail take effect.
     for (const [i, inst] of this.instances) {
       inst.dispose();

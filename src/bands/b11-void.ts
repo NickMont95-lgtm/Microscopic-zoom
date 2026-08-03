@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { BandContext, BandFrame, BandInstance } from '../core/types.ts';
-import { detail, disposeScene, makeRail, makeRng, makeScaffold, realToLocal } from './common.ts';
+import { disposeScene, makeRail, makeRng, makeScaffold, realToLocal, subdiv } from './common.ts';
 import { makeField } from './field.ts';
 
 /**
@@ -90,7 +90,7 @@ export function makeVoidBand(ctx: BandContext): BandInstance {
     depthWrite: false,
     side: THREE.BackSide,
   });
-  const cloud = new THREE.Mesh(new THREE.IcosahedronGeometry(1, detail(quality, 4, 2)), cloudMat);
+  const cloud = new THREE.Mesh(new THREE.IcosahedronGeometry(1, subdiv(quality, 4, 2)), cloudMat);
   scene.add(cloud);
 
   // ---- the vacuum --------------------------------------------------------
@@ -128,7 +128,7 @@ export function makeVoidBand(ctx: BandContext): BandInstance {
     roughness: 0.45,
     emissive: new THREE.Color(0x0e1420).convertSRGBToLinear(),
   });
-  const nucleonGeo = new THREE.IcosahedronGeometry(1, detail(quality, 3, 2));
+  const nucleonGeo = new THREE.IcosahedronGeometry(1, subdiv(quality, 4, 2));
 
   const protons = new THREE.InstancedMesh(nucleonGeo, protonMat, 15);
   const neutrons = new THREE.InstancedMesh(nucleonGeo, neutronMat, 16);

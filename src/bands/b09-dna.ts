@@ -9,6 +9,7 @@ import {
   makeRail,
   makeRng,
   makeScaffold,
+  subdiv,
 } from './common.ts';
 
 /**
@@ -92,7 +93,7 @@ export function makeDnaBand(ctx: BandContext): BandInstance {
   chromatin.rotation.set(0.3, 0.5, 0.2);
   scene.add(chromatin);
 
-  const coreGeo = new THREE.CylinderGeometry(U(5.5 * NM), U(5.5 * NM), U(5.5 * NM), detail(quality, 26, 10));
+  const coreGeo = new THREE.CylinderGeometry(U(5.5 * NM), U(5.5 * NM), U(5.5 * NM), detail(quality, 40, 14));
   const coreMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xd88fb8).convertSRGBToLinear(),
     roughness: 0.5,
@@ -129,12 +130,12 @@ export function makeDnaBand(ctx: BandContext): BandInstance {
     color: new THREE.Color(0xffc25c).convertSRGBToLinear(),
     roughness: 0.42,
   });
-  const polymerase = new THREE.Mesh(new THREE.IcosahedronGeometry(U(6 * NM), 2), polMat);
+  const polymerase = new THREE.Mesh(new THREE.IcosahedronGeometry(U(6 * NM), subdiv(quality, 3, 2)), polMat);
   polymerase.scale.set(1, 0.85, 1.1);
   duplex.group.add(polymerase);
 
   // ---- nucleoplasm crowding ----------------------------------------------
-  const blobGeo = new THREE.IcosahedronGeometry(U(1.6 * NM), 1);
+  const blobGeo = new THREE.IcosahedronGeometry(U(1.6 * NM), subdiv(quality, 1, 1));
   const blobMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x6a6ab0).convertSRGBToLinear(),
     roughness: 0.72,
@@ -236,9 +237,9 @@ function buildDuplex(
     const curve = new THREE.CatmullRomCurve3(pts);
     const geo = new THREE.TubeGeometry(
       curve,
-      Math.max(80, Math.round(steps * 0.9)),
+      Math.max(120, Math.round(steps * 1.1)),
       U(0.35 * NM),
-      Math.max(5, Math.round(9 * detailScale)),
+      Math.max(8, Math.round(15 * detailScale)),
       false,
     );
     const mesh = new THREE.Mesh(geo, strandMats[s]);
@@ -306,7 +307,7 @@ function makeNucleosomeWrapGeometry(detailScale: number): THREE.BufferGeometry {
   const superR = 4.2 * NM;
   const pitch = 2.6 * NM;
   const pts: THREE.Vector3[] = [];
-  const steps = Math.max(48, Math.round(160 * detailScale));
+  const steps = Math.max(64, Math.round(240 * detailScale));
   for (let i = 0; i <= steps; i++) {
     const f = i / steps;
     // Negative angle: left-handed superhelix.
@@ -319,7 +320,7 @@ function makeNucleosomeWrapGeometry(detailScale: number): THREE.BufferGeometry {
     curve,
     Math.max(40, Math.round(steps * 0.8)),
     U(1.0 * NM),
-    Math.max(5, Math.round(8 * detailScale)),
+    Math.max(7, Math.round(13 * detailScale)),
     false,
   );
 }

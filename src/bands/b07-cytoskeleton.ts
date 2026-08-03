@@ -9,6 +9,7 @@ import {
   makeRail,
   makeRng,
   makeScaffold,
+  subdiv,
 } from './common.ts';
 
 /**
@@ -77,8 +78,11 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
   mtGroup.rotation.set(0.16, 0.42, 0.1);
   scene.add(mtGroup);
 
-  const mtLength = 4.0e-6;
-  const tubulinGeo = new THREE.SphereGeometry(U(2.0e-9), detail(quality, 10, 5), detail(quality, 8, 4));
+  const mtLength = 3.2e-6;
+  // Around ten thousand instances, so each extra segment costs thousands of
+  // triangles. Radius 2.2 nm so neighbouring monomers just touch at their 4 nm
+  // spacing rather than leaving the protofilament looking like a bead chain.
+  const tubulinGeo = new THREE.SphereGeometry(U(2.2e-9), detail(quality, 9, 5), detail(quality, 7, 4));
   const tubulinA = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x6fa8dc).convertSRGBToLinear(),
     roughness: 0.42,
@@ -91,7 +95,12 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
   // Alpha and beta tubulin alternate along each protofilament. Two instanced
   // meshes rather than per-instance colour keeps the two subunits visually
   // distinct at any lighting.
-  const ringCount = Math.max(30, Math.round((mtLength / (TUBULIN_RISE / 2)) * quality.instanceScale));
+  // One ring per MONOMER, not per dimer. TUBULIN_RISE is the 8 nm dimer repeat,
+  // and a dimer is two ~4 nm monomers stacked along the protofilament, so the
+  // half-rise spacing is correct — removing it left visible gaps between beads
+  // where the real lattice is continuous. Not scaled by quality: the count is
+  // set by the molecule, not by a preference.
+  const ringCount = Math.max(30, Math.round(mtLength / (TUBULIN_RISE / 2)));
   const perMesh = Math.floor((ringCount * PROTOFILAMENTS) / 2);
   const tubA = new THREE.InstancedMesh(tubulinGeo, tubulinA, perMesh);
   const tubB = new THREE.InstancedMesh(tubulinGeo, tubulinB, perMesh);
@@ -136,7 +145,7 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
     transparent: true,
     opacity: 0.92,
   });
-  const cargo = new THREE.Mesh(new THREE.IcosahedronGeometry(U(45e-9), 3), cargoMat);
+  const cargo = new THREE.Mesh(new THREE.IcosahedronGeometry(U(45e-9), subdiv(quality, 3, 2)), cargoMat);
   mtGroup.add(cargo);
 
   const motorMat = new THREE.MeshStandardMaterial({
@@ -144,18 +153,18 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
     roughness: 0.4,
   });
   const motorStalk = new THREE.Mesh(
-    new THREE.CylinderGeometry(U(2e-9), U(2e-9), U(40e-9), 6),
+    new THREE.CylinderGeometry(U(2e-9), U(2e-9), U(40e-9), detail(quality, 10, 6)),
     motorMat,
   );
   mtGroup.add(motorStalk);
   const heads = [0, 1].map(() => {
-    const h = new THREE.Mesh(new THREE.SphereGeometry(U(4e-9), 8, 6), motorMat);
+    const h = new THREE.Mesh(new THREE.SphereGeometry(U(4e-9), detail(quality, 14, 8), detail(quality, 10, 6)), motorMat);
     mtGroup.add(h);
     return h;
   });
 
   // ---- actin filaments ---------------------------------------------------
-  const actinGeo = new THREE.SphereGeometry(U(2.7e-9), 8, 6);
+  const actinGeo = new THREE.SphereGeometry(U(2.7e-9), detail(quality, 9, 6), detail(quality, 7, 5));
   const actinMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xa8d8a0).convertSRGBToLinear(),
     roughness: 0.5,
@@ -198,8 +207,8 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
   // ---- ribosomes ---------------------------------------------------------
   // Two unequal subunits. The large one is roughly twice the small one's mass,
   // and they sit slightly offset rather than concentric.
-  const largeGeo = new THREE.IcosahedronGeometry(U(11e-9), detail(quality, 2, 1));
-  const smallGeo = new THREE.IcosahedronGeometry(U(7.5e-9), detail(quality, 2, 1));
+  const largeGeo = new THREE.IcosahedronGeometry(U(11e-9), subdiv(quality, 1, 1));
+  const smallGeo = new THREE.IcosahedronGeometry(U(7.5e-9), subdiv(quality, 1, 1));
   const largeMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x8c6bb1).convertSRGBToLinear(),
     roughness: 0.62,
@@ -232,7 +241,7 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
   scene.add(riboLarge, riboSmall);
 
   // ---- keratin intermediate filaments ------------------------------------
-  const kifGeo = new THREE.CylinderGeometry(U(5e-9), U(5e-9), 1, 7, 1, true);
+  const kifGeo = new THREE.CylinderGeometry(U(5e-9), U(5e-9), 1, detail(quality, 11, 6), 1, true);
   const kifMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x9fb6c9).convertSRGBToLinear(),
     roughness: 0.6,
@@ -276,7 +285,7 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
     opacity: 0.55,
     side: THREE.DoubleSide,
   });
-  const outer = new THREE.Mesh(new THREE.CapsuleGeometry(U(180e-9), U(560e-9), 8, 24), outerMat);
+  const outer = new THREE.Mesh(new THREE.CapsuleGeometry(U(180e-9), U(560e-9), detail(quality, 14, 8), detail(quality, 40, 20)), outerMat);
   outer.rotation.z = Math.PI / 2;
   mito.add(outer);
 
@@ -287,7 +296,7 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
     roughness: 0.55,
     side: THREE.DoubleSide,
   });
-  const cristaGeo = new THREE.PlaneGeometry(U(300e-9), U(240e-9), 6, 4);
+  const cristaGeo = new THREE.PlaneGeometry(U(300e-9), U(240e-9), detail(quality, 10, 6), detail(quality, 7, 4));
   const CRISTAE = count(quality, 26, 8);
   const cristae = new THREE.InstancedMesh(cristaGeo, cristaMat, CRISTAE);
   fillInstances(cristae, (i, d) => {

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Rail } from './rail.ts';
 
-export type QualityLevel = 'low' | 'medium' | 'high';
+export type QualityLevel = 'low' | 'medium' | 'high' | 'ultra';
 
 export interface QualitySettings {
   level: QualityLevel;
@@ -13,10 +13,17 @@ export interface QualitySettings {
   detailScale: number;
 }
 
+/**
+ * `detailScale` multiplies LINEAR segment counts (see `detail()`), and shifts
+ * subdivision LEVELS by whole steps (see `subdiv()`). The two must not be
+ * confused: an icosahedron's face count grows as 4^level, so multiplying a
+ * subdivision level by 1.6 turns 80k triangles into 21 million.
+ */
 export const QUALITY_PRESETS: Record<QualityLevel, QualitySettings> = {
-  low: { level: 'low', instanceScale: 0.3, maxPixelRatio: 1, detailScale: 0.5 },
-  medium: { level: 'medium', instanceScale: 0.65, maxPixelRatio: 1.5, detailScale: 0.75 },
-  high: { level: 'high', instanceScale: 1, maxPixelRatio: 2, detailScale: 1 },
+  low: { level: 'low', instanceScale: 0.35, maxPixelRatio: 1, detailScale: 0.55 },
+  medium: { level: 'medium', instanceScale: 0.7, maxPixelRatio: 1.5, detailScale: 0.85 },
+  high: { level: 'high', instanceScale: 1.25, maxPixelRatio: 2, detailScale: 1.3 },
+  ultra: { level: 'ultra', instanceScale: 1.9, maxPixelRatio: 2, detailScale: 1.9 },
 };
 
 /** Everything a band needs at construction time. */

@@ -201,9 +201,18 @@ export interface SkinPatch {
  * scale, so the same 200×200 grid describes 20 cm of cheek or 200 µm of a
  * single pore rim.
  */
+/** Drawing-buffer width in physical pixels, for LOD decisions. */
+function pixelWidth(): number {
+  if (typeof window === 'undefined') return 1600;
+  return window.innerWidth * Math.min(window.devicePixelRatio || 1, 2);
+}
+
 export function makeSkinPatch(opts: SkinPatchOptions): SkinPatch {
   const q = opts.quality;
-  const seg = detail(q, 220, 64);
+  // Every vertex of this grid evaluates the height field, which runs two Worley
+  // lattices over nine cells each. Raising it is far more expensive than the
+  // triangle count suggests.
+  const seg = detail(q, 240, 80);
   const geo = new THREE.PlaneGeometry(1, 1, seg, seg);
 
   const material = new THREE.MeshStandardMaterial({
@@ -330,8 +339,11 @@ export function makeSkinPatch(opts: SkinPatchOptions): SkinPatch {
     const halfMetres = frame.metresVisible * coverage * 0.5;
     uniforms.uPatchMetres.value = halfMetres;
     uniforms.uLocalPerMetre.value = localPerMetre;
-    // Screen pixels are not known here, so approximate: a 1600-pixel-wide view.
-    uniforms.uPixelMetres.value = frame.metresVisible / 1600;
+    // Metres per screen pixel, from the ACTUAL drawing buffer width. This drives
+    // the LOD fades that decide when microrelief and corneocyte plates appear,
+    // so guessing a fixed 1600 px meant fine detail stayed suppressed on a
+    // high-resolution display — precisely where there were pixels to show it.
+    uniforms.uPixelMetres.value = frame.metresVisible / Math.max(320, pixelWidth());
     uniforms.uBreath.value = Math.sin(frame.elapsed * 2 * Math.PI * (14 / 60));
 
     // Slide the drawn window so it is always centred on what the camera is
@@ -400,7 +412,7 @@ export interface HairField {
 export function makeHairField(opts: HairFieldOptions): HairField {
   const q = opts.quality;
   const n = Math.max(6, Math.round(opts.count * q.instanceScale));
-  const geo = new THREE.CylinderGeometry(0.35, 1, 1, detail(q, 7, 4), 1, true);
+  const geo = new THREE.CylinderGeometry(0.35, 1, 1, detail(q, 10, 5), 1, true);
   // Move the pivot to the base so instances can be scaled by length directly.
   geo.translate(0, 0.5, 0);
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { BandContext, BandFrame, BandInstance } from '../core/types.ts';
-import { count, detail, disposeScene, fillInstances, makeRail, makeRng, makeScaffold } from './common.ts';
+import { count, detail, disposeScene, fillInstances, makeRail, makeRng, makeScaffold, subdiv } from './common.ts';
 
 /**
  * BAND 10 — Atoms of the backbone (2.7 nm → 79 pm across the screen)
@@ -146,12 +146,12 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
   // Nuclei: tiny hard cores at the centre of each cloud. A nucleus is about
   // 1/100,000 of the atom, so at this scale it is far below a pixel — these are
   // markers, not the nucleus to scale. Band 11 makes that point properly.
-  const coreGeo = new THREE.IcosahedronGeometry(U(9 * PM), detail(quality, 2, 1));
+  const coreGeo = new THREE.IcosahedronGeometry(U(9 * PM), subdiv(quality, 2, 1));
   const cores: THREE.Mesh[] = [];
   const coreMats: THREE.MeshStandardMaterial[] = [];
 
   // Clouds: one additive shell per atom, scaled to the van der Waals radius.
-  const cloudGeo = new THREE.IcosahedronGeometry(1, detail(quality, 3, 2));
+  const cloudGeo = new THREE.IcosahedronGeometry(1, subdiv(quality, 4, 2));
   const cloudMats: THREE.ShaderMaterial[] = [];
   const clouds: THREE.Mesh[] = [];
 
@@ -197,7 +197,7 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
   }
 
   // ---- bonds --------------------------------------------------------------
-  const bondGeo = new THREE.CylinderGeometry(U(14 * PM), U(14 * PM), 1, detail(quality, 10, 5));
+  const bondGeo = new THREE.CylinderGeometry(U(14 * PM), U(14 * PM), 1, detail(quality, 18, 7));
   const bondMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xd8d8e8).convertSRGBToLinear(),
     roughness: 0.35,
@@ -214,7 +214,7 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
   // ---- surrounding water --------------------------------------------------
   // DNA in a nucleus is in water, and at this scale water is not a background —
   // it is a crowd of molecules the same size as the ones we are looking at.
-  const waterGeo = new THREE.IcosahedronGeometry(U(140 * PM), 1);
+  const waterGeo = new THREE.IcosahedronGeometry(U(140 * PM), subdiv(quality, 1, 1));
   const waterMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x4a7fd8).convertSRGBToLinear(),
     roughness: 0.2,

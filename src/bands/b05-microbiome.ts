@@ -9,6 +9,7 @@ import {
   makeRail,
   makeRng,
   makeScaffold,
+  subdiv,
   type MotionHandle,
 } from './common.ts';
 
@@ -76,7 +77,7 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
   wall.position.set(0, 0, -22e-6 * L);
   scene.add(wall);
 
-  const plateGeo = makeShingleGeometry(detail(quality, 2, 1));
+  const plateGeo = makeShingleGeometry(detail(quality, 5, 2));
   const plateMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xd6b49c).convertSRGBToLinear(),
     roughness: 0.66,
@@ -108,7 +109,7 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
 
   // ---- Cutibacterium acnes ------------------------------------------------
   // Rods, capsule-shaped, ~0.5 µm across and 1–1.5 µm long.
-  const rodGeo = new THREE.CapsuleGeometry(0.25, 0.85, detail(quality, 4, 2), detail(quality, 12, 6));
+  const rodGeo = new THREE.CapsuleGeometry(0.25, 0.85, detail(quality, 7, 3), detail(quality, 22, 9));
   rodGeo.rotateZ(Math.PI / 2);
   const rodMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xcfe0b6).convertSRGBToLinear(),
@@ -139,7 +140,7 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
   // ---- Staphylococcus epidermidis ----------------------------------------
   // Cocci ~0.9 µm, in irregular clusters. Built cluster by cluster so they
   // group the way staphylococci actually do rather than scattering evenly.
-  const cocGeo = new THREE.IcosahedronGeometry(0.5, detail(quality, 3, 1));
+  const cocGeo = new THREE.IcosahedronGeometry(0.5, subdiv(quality, 2, 1));
   const cocMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xf0d9c4).convertSRGBToLinear(),
     roughness: 0.34,
@@ -193,7 +194,7 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
 
   // ---- biofilm ------------------------------------------------------------
   // Extracellular polymeric substance: fine strands bridging cells and wall.
-  const strandGeo = new THREE.CylinderGeometry(0.5, 0.5, 1, 5, 1, true);
+  const strandGeo = new THREE.CylinderGeometry(0.5, 0.5, 1, detail(quality, 8, 5), 1, true);
   const strandMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xbfd4c8).convertSRGBToLinear(),
     roughness: 0.25,
@@ -231,7 +232,7 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
   scene.add(strands);
 
   // ---- sebum --------------------------------------------------------------
-  const sebGeo = new THREE.IcosahedronGeometry(1, detail(quality, 2, 1));
+  const sebGeo = new THREE.IcosahedronGeometry(1, subdiv(quality, 2, 1));
   // Plain transparency rather than MeshPhysicalMaterial transmission.
   // Transmission makes three.js render the whole scene an extra time into a
   // back buffer every frame, per material that uses it. Across bands 4-8 that

@@ -26,14 +26,20 @@ import { makeRng } from './common.ts';
  * that points +Z into the follicle.
  */
 
-const RADIAL = 12;
+// Radial segments around the body. Twelve read as a faceted tube at the top
+// of band 4, where the animal spans most of the frame.
+const RADIAL = 24;
 
 /** Radius profile along the body, t = 0 at the tail tip, 1 at the mouthparts. */
 function bodyRadius(t: number): number {
   // Opisthosoma: long taper from a rounded tail up to the podosoma.
   if (t < 0.58) {
     const u = t / 0.58;
-    return 0.16 + 0.34 * Math.pow(u, 0.45);
+    // Closes to a point at the tail. Starting at a finite radius left the tube
+    // open at the posterior end, and at higher resolution you could see straight
+    // down the inside of the animal.
+    const taper = Math.min(1, u / 0.06);
+    return (0.16 + 0.34 * Math.pow(u, 0.45)) * taper;
   }
   // Podosoma: the widest part, where the legs attach.
   if (t < 0.86) {
@@ -42,7 +48,7 @@ function bodyRadius(t: number): number {
   }
   // Gnathosoma: narrows to the mouthparts.
   const u = (t - 0.86) / 0.14;
-  return 0.50 - 0.30 * u * u;
+  return 0.50 - 0.44 * u * u;
 }
 
 function buildBodyGeometry(segments: number): THREE.BufferGeometry {
@@ -57,7 +63,11 @@ function buildBodyGeometry(segments: number): THREE.BufferGeometry {
     // Transverse annulation of the opisthosoma. Fine cuticular striations,
     // roughly 40 across the tail, and absent on the podosoma.
     if (t < 0.60) {
-      r *= 1 + 0.055 * Math.sin(t * 40 * Math.PI * 2);
+      // Cuticular striations. The count is deliberately low relative to the
+      // segment count: at 40 rings over this many segments the annulation
+      // aliased into a stack of visibly separate hoops rather than reading as
+      // fine surface texture.
+      r *= 1 + 0.045 * Math.sin(t * 18 * Math.PI * 2);
     }
 
     // Slightly flattened dorsoventrally, as the real animal is.
@@ -75,7 +85,32 @@ function buildBodyGeometry(segments: number): THREE.BufferGeometry {
     for (let j = 0; j < RADIAL; j++) {
       const a = i * (RADIAL + 1) + j;
       const b = a + RADIAL + 1;
-      idx.push(a, b, a + 1, b, b + 1, a + 1);
+      // Winding order matters: (a, b, a+1) makes the surface normal point
+      // INWARD, so three.js culls every outward-facing triangle and you see
+      // straight through the animal to the inside of its far wall. It reads as
+      // a stack of hoops rather than a body. Wound the other way round, the
+      // normals face out and the tube is solid.
+      idx.push(a, a + 1, b, b, a + 1, b + 1);
+    }
+  }
+
+  // Cap both ends.
+  //
+  // A swept tube is open at t=0 and t=1. The anterior end has a finite radius
+  // where the gnathosoma attaches, so without a cap you can see straight down
+  // the inside of the animal — which at any decent resolution reads as a stack
+  // of hoops rather than as a body. Two triangle fans close it.
+  const ringVerts = RADIAL + 1;
+  for (const end of [0, segments]) {
+    const centreIndex = pos.length / 3;
+    const t = end / segments;
+    pos.push(0, 0, t);
+    nor.push(0, 0, end === 0 ? -1 : 1);
+    for (let j = 0; j < RADIAL; j++) {
+      const a = end * ringVerts + j;
+      const b = end * ringVerts + j + 1;
+      if (end === 0) idx.push(centreIndex, b, a);
+      else idx.push(centreIndex, a, b);
     }
   }
 
@@ -115,27 +150,26 @@ export function buildMite(opts: MiteOptions): Mite {
     color: new THREE.Color(opts.color ?? 0xd8cfc0).convertSRGBToLinear(),
     roughness: 0.42,
     metalness: 0,
-    // The cuticle is genuinely translucent; a little transmission of the
-    // grazing light sells that better than a flat opaque surface.
-    transparent: true,
-    opacity: 0.94,
+    // Opaque. The cuticle is genuinely translucent, but a semi-transparent
+    // closed tube sorts against its own far wall and reads as hollow, which is
+    // a far worse error than losing a little translucency.
   });
 
-  const bodyGeo = buildBodyGeometry(Math.max(48, Math.round(140 * (opts.detail ?? 1))));
+  const bodyGeo = buildBodyGeometry(Math.max(64, Math.round(200 * (opts.detail ?? 1))));
   const body = new THREE.Mesh(bodyGeo, mat);
   body.scale.set(opts.length * 0.115, opts.length * 0.115, opts.length);
   bodyGroup.add(body);
 
   // ---- gnathosoma --------------------------------------------------------
   // Short trapezoidal capitulum with a pair of palps, at the anterior tip.
-  const gnGeo = new THREE.CylinderGeometry(0.36, 0.52, 1, 8);
+  const gnGeo = new THREE.CylinderGeometry(0.36, 0.52, 1, 16);
   gnGeo.rotateX(Math.PI / 2);
   const gnatho = new THREE.Mesh(gnGeo, mat);
   gnatho.position.z = opts.length * 1.005;
   gnatho.scale.set(opts.length * 0.058, opts.length * 0.048, opts.length * 0.042);
   bodyGroup.add(gnatho);
 
-  const palpGeo = new THREE.CapsuleGeometry(0.3, 1.0, 2, 5);
+  const palpGeo = new THREE.CapsuleGeometry(0.3, 1.0, 4, 10);
   palpGeo.rotateX(Math.PI / 2);
   const palps: THREE.Mesh[] = [];
   for (const sx of [-1, 1]) {
@@ -150,10 +184,10 @@ export function buildMite(opts: MiteOptions): Mite {
   // FOUR PAIRS, all on the podosoma — the anterior third. Each is short,
   // three-segmented and ends in a claw. They project laterally and ventrally.
   const legGroups: { pivot: THREE.Group; phase: number; side: number }[] = [];
-  const coxaGeo = new THREE.CapsuleGeometry(0.32, 0.5, 2, 5);
-  const femurGeo = new THREE.CapsuleGeometry(0.26, 0.6, 2, 5);
-  const tarsusGeo = new THREE.CapsuleGeometry(0.19, 0.5, 2, 5);
-  const clawGeo = new THREE.ConeGeometry(0.16, 0.45, 5);
+  const coxaGeo = new THREE.CapsuleGeometry(0.32, 0.5, 4, 10);
+  const femurGeo = new THREE.CapsuleGeometry(0.26, 0.6, 4, 10);
+  const tarsusGeo = new THREE.CapsuleGeometry(0.19, 0.5, 4, 9);
+  const clawGeo = new THREE.ConeGeometry(0.16, 0.45, 9);
 
   const LEG_Z = [0.635, 0.705, 0.775, 0.845]; // fractions of body length
   for (let pair = 0; pair < 4; pair++) {

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { BandContext, BandFrame, BandInstance } from '../core/types.ts';
 import { buildFigure, loadHeadModel, type Figure } from './figure.ts';
-import { detail, disposeScene, makeRail, makeScaffold } from './common.ts';
+import { disposeScene, makeRail, makeScaffold, subdiv } from './common.ts';
 
 /**
  * BAND 1 — The room (2.24 m → 100 mm across the screen)
@@ -22,7 +22,8 @@ export function makeRoomBand(ctx: BandContext): BandInstance {
   const { quality } = ctx;
 
   // ---- the man -----------------------------------------------------------
-  const figure: Figure = buildFigure(detail(quality, 6, 4));
+  // subdiv, not detail: this is an icosahedron level, so it grows as 4^n.
+  const figure: Figure = buildFigure(subdiv(quality, 6, 5));
   figure.root.scale.setScalar(S);
 
   // Look path, in local units. The camera opens on head-and-shoulders, rises to

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { BandContext, BandFrame, BandInstance } from '../core/types.ts';
-import { count, detail, disposeScene, fillInstances, makeRail, makeRng, makeScaffold, realToLocal } from './common.ts';
+import { count, disposeScene, fillInstances, makeRail, makeRng, makeScaffold, realToLocal, subdiv } from './common.ts';
 import { makeField } from './field.ts';
 
 /**
@@ -101,7 +101,7 @@ export function makeProtonBand(ctx: BandContext): BandInstance {
     depthWrite: false,
     side: THREE.BackSide,
   });
-  const shell = new THREE.Mesh(new THREE.IcosahedronGeometry(1, detail(quality, 4, 2)), shellMat);
+  const shell = new THREE.Mesh(new THREE.IcosahedronGeometry(1, subdiv(quality, 4, 2)), shellMat);
   scene.add(shell);
 
   // ---- valence quarks ----------------------------------------------------
@@ -119,7 +119,7 @@ export function makeProtonBand(ctx: BandContext): BandInstance {
         opacity: 1,
       }),
   );
-  const quarkGeo = new THREE.IcosahedronGeometry(1, detail(quality, 3, 2));
+  const quarkGeo = new THREE.IcosahedronGeometry(1, subdiv(quality, 4, 2));
   const quarks = quarkMats.map((m) => {
     const q = new THREE.Mesh(quarkGeo, m);
     quarkGroup.add(q);
@@ -163,7 +163,7 @@ export function makeProtonBand(ctx: BandContext): BandInstance {
   // ---- virtual pairs -----------------------------------------------------
   // Quark-antiquark pairs flickering in and out of existence. They are drawn
   // popping into view and vanishing again, because that is what they do.
-  const pairGeo = new THREE.IcosahedronGeometry(1, 1);
+  const pairGeo = new THREE.IcosahedronGeometry(1, subdiv(quality, 2, 1));
   const pairMat = new THREE.MeshBasicMaterial({
     color: new THREE.Color(0xffe0a0).convertSRGBToLinear(),
     transparent: true,

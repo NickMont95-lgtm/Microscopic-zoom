@@ -236,8 +236,10 @@ function capsule(radius: number, length: number, seg = 10): THREE.BufferGeometry
 
 export function buildFigure(detailLevel: number): Figure {
   // The head carries the whole band, so it never drops below a level where the
-  // silhouette reads as a head rather than as a polyhedron.
-  const headDetail = Math.max(4, detailLevel);
+  // silhouette reads as a head rather than as a polyhedron. Capped at 7
+  // (~330k triangles) because applyHair() walks every vertex on the CPU at
+  // build time, and level 8 would put a visible hitch on the opening frame.
+  const headDetail = Math.min(7, Math.max(5, detailLevel));
   const root = new THREE.Group();
   const rng = makeRng(20260802);
 

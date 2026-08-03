@@ -435,9 +435,27 @@ export function count(quality: QualitySettings, n: number, floor = 8): number {
   return Math.max(floor, Math.round(n * quality.instanceScale));
 }
 
-/** Scales a geometry subdivision parameter by the quality preset. */
+/**
+ * Scales a LINEAR geometry parameter — segment counts, ring counts, grid
+ * resolution — by the quality preset. Cost grows roughly linearly, so a
+ * multiplier is the right thing.
+ */
 export function detail(quality: QualitySettings, n: number, floor = 3): number {
   return Math.max(floor, Math.round(n * quality.detailScale));
+}
+
+/**
+ * Shifts a SUBDIVISION LEVEL by whole steps.
+ *
+ * Icosahedron and similar recursive geometries have 4^level faces, so scaling
+ * the level by a multiplier is catastrophic: at detailScale 1.5 a level-6 head
+ * would become level 9, which is 5 million triangles for one mesh. Quality
+ * therefore moves these by at most a step or two, never by a factor.
+ */
+export function subdiv(quality: QualitySettings, base: number, floor = 0): number {
+  const d = quality.detailScale;
+  const bump = d >= 2.0 ? 2 : d >= 1.25 ? 1 : d >= 0.8 ? 0 : -1;
+  return Math.max(floor, base + bump);
 }
 
 /** Disposes every geometry and material reachable from a scene. */

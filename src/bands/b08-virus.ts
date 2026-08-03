@@ -9,6 +9,7 @@ import {
   makeRail,
   makeRng,
   makeScaffold,
+  subdiv,
 } from './common.ts';
 
 /**
@@ -89,7 +90,7 @@ export function makeVirusBand(ctx: BandContext): BandInstance {
     opacity: 0.88,
     side: THREE.DoubleSide,
   });
-  const envelope = new THREE.Mesh(new THREE.PlaneGeometry(U(1400e-9), U(1400e-9), 24, 24), envMat);
+  const envelope = new THREE.Mesh(new THREE.PlaneGeometry(U(1400e-9), U(1400e-9), 40, 40), envMat);
   envelope.position.z = U(-140e-9);
   // Gently domed rather than flat, so it reads as a surface of a large body.
   {
@@ -111,7 +112,7 @@ export function makeVirusBand(ctx: BandContext): BandInstance {
     roughness: 0.4,
   });
   // Eightfold rotational symmetry — the defining feature of the NPC.
-  const spokeGeo = new THREE.CapsuleGeometry(U(9e-9), U(26e-9), 4, 8);
+  const spokeGeo = new THREE.CapsuleGeometry(U(9e-9), U(26e-9), detail(quality, 8, 4), detail(quality, 16, 8));
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2;
     const spoke = new THREE.Mesh(spokeGeo, npcMat);
@@ -120,7 +121,7 @@ export function makeVirusBand(ctx: BandContext): BandInstance {
     npc.add(spoke);
   }
   const npcRing = new THREE.Mesh(
-    new THREE.TorusGeometry(U(NPC_R * 0.72), U(7e-9), 8, 32),
+    new THREE.TorusGeometry(U(NPC_R * 0.72), U(7e-9), detail(quality, 14, 8), detail(quality, 56, 28)),
     npcMat,
   );
   npc.add(npcRing);
@@ -140,7 +141,7 @@ export function makeVirusBand(ctx: BandContext): BandInstance {
 
   // ---- rhinoviruses -------------------------------------------------------
   // A third the diameter of the adenovirus, so about a 27th of the volume.
-  const rhinoGeo = makeRhinovirusGeometry(detail(quality, 3, 2));
+  const rhinoGeo = makeRhinovirusGeometry(subdiv(quality, 3, 2));
   const rhinoMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x6fd6b0).convertSRGBToLinear(),
     roughness: 0.4,
@@ -162,7 +163,7 @@ export function makeVirusBand(ctx: BandContext): BandInstance {
   // ---- cytosolic crowding -------------------------------------------------
   // Cytoplasm is not empty; it is a dense solution of protein. Small blobs at
   // 5-10 nm keep the shot from looking like objects floating in vacuum.
-  const crowdGeo = new THREE.IcosahedronGeometry(U(3.5e-9), 1);
+  const crowdGeo = new THREE.IcosahedronGeometry(U(3.5e-9), subdiv(quality, 1, 1));
   const crowdMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x5b7f96).convertSRGBToLinear(),
     roughness: 0.7,
@@ -258,14 +259,14 @@ function buildAdenovirus(detailScale: number): {
   // Hexons: capsomers tiling the 20 faces. Placed on the icosahedron's face
   // triangles so the packing reads as the real T = 25 lattice rather than as
   // random bumps.
-  const hexGeo = new THREE.CylinderGeometry(U(4.2e-9), U(5.0e-9), U(5e-9), 6);
+  const hexGeo = new THREE.CylinderGeometry(U(4.2e-9), U(5.0e-9), U(5e-9), 6, 1);
   const hexMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xa9c0e8).convertSRGBToLinear(),
     roughness: 0.45,
   });
   const base = new THREE.IcosahedronGeometry(1, 0);
   const pos = base.attributes.position as THREE.BufferAttribute;
-  const rows = Math.max(2, Math.round(4 * detailScale));
+  const rows = Math.max(3, Math.round(6 * detailScale));
   const hexList: THREE.Matrix4[] = [];
   const d = new THREE.Object3D();
   const a = new THREE.Vector3();
@@ -304,8 +305,8 @@ function buildAdenovirus(detailScale: number): {
     color: new THREE.Color(0xe8dcc0).convertSRGBToLinear(),
     roughness: 0.5,
   });
-  const fibreGeo = new THREE.CylinderGeometry(U(1.4e-9), U(1.9e-9), U(FIBRE_LEN), 6);
-  const knobGeo = new THREE.IcosahedronGeometry(U(3.6e-9), 1);
+  const fibreGeo = new THREE.CylinderGeometry(U(1.4e-9), U(1.9e-9), U(FIBRE_LEN), 10);
+  const knobGeo = new THREE.IcosahedronGeometry(U(3.6e-9), 2);
   const pentonGeo = new THREE.CylinderGeometry(U(5.5e-9), U(6.5e-9), U(6e-9), 5);
 
   const phi = (1 + Math.sqrt(5)) / 2;

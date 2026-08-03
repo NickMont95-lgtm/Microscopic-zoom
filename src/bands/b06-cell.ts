@@ -9,6 +9,7 @@ import {
   makeRail,
   makeRng,
   makeScaffold,
+  subdiv,
 } from './common.ts';
 
 /**
@@ -95,7 +96,7 @@ export function makeCellBand(ctx: BandContext): BandInstance {
   scene.add(nucleusGroup);
 
   const NUC_R = U(3.0e-6); // 6 µm across
-  const nucGeo = new THREE.SphereGeometry(NUC_R, detail(quality, 72, 28), detail(quality, 48, 20));
+  const nucGeo = new THREE.SphereGeometry(NUC_R, detail(quality, 96, 32), detail(quality, 64, 24));
   const nucMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x8b7fd0).convertSRGBToLinear(),
     roughness: 0.42,
@@ -107,7 +108,7 @@ export function makeCellBand(ctx: BandContext): BandInstance {
 
   // Nuclear pore complexes: ~120 nm across, a few thousand per nucleus. Drawn
   // as rings studding the envelope.
-  const poreGeo = new THREE.TorusGeometry(U(55e-9), U(14e-9), 5, 12);
+  const poreGeo = new THREE.TorusGeometry(U(55e-9), U(14e-9), detail(quality, 9, 5), detail(quality, 20, 10));
   const poreMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xa294d8).convertSRGBToLinear(),
     roughness: 0.5,
@@ -123,7 +124,7 @@ export function makeCellBand(ctx: BandContext): BandInstance {
 
   // Chromatin showing through the envelope, denser at the periphery
   // (heterochromatin) than in the middle.
-  const chromGeo = new THREE.IcosahedronGeometry(U(90e-9), 1);
+  const chromGeo = new THREE.IcosahedronGeometry(U(90e-9), subdiv(quality, 1, 1));
   const chromMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xb9a6ff).convertSRGBToLinear(),
     roughness: 0.55,
@@ -145,7 +146,7 @@ export function makeCellBand(ctx: BandContext): BandInstance {
 
   // Nucleolus: a dense body ~1.5 µm across where ribosomes are assembled.
   const nucleolus = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(U(0.75e-6), 3),
+    new THREE.IcosahedronGeometry(U(0.75e-6), subdiv(quality, 4, 2)),
     new THREE.MeshStandardMaterial({
       color: new THREE.Color(0x3f3378).convertSRGBToLinear(),
       roughness: 0.75,
@@ -201,7 +202,8 @@ export function makeCellBand(ctx: BandContext): BandInstance {
 
   // Ribosomes on the ER. At 25 nm these are sub-pixel until the very bottom of
   // the band, but they are what makes rough ER rough.
-  const riboGeo = new THREE.IcosahedronGeometry(U(12e-9), 0);
+  // 2600 instances; one subdivision step here is a quarter-million triangles.
+  const riboGeo = new THREE.IcosahedronGeometry(U(12e-9), subdiv(quality, 0, 0));
   const riboMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x2f4f4a).convertSRGBToLinear(),
     roughness: 0.8,
@@ -227,7 +229,7 @@ export function makeCellBand(ctx: BandContext): BandInstance {
     opacity: 0.85,
     side: THREE.DoubleSide,
   });
-  const cisternGeo = new THREE.CylinderGeometry(1, 1, 1, detail(quality, 28, 10), 1, true);
+  const cisternGeo = new THREE.CylinderGeometry(1, 1, 1, detail(quality, 40, 12), 1, true);
   for (let i = 0; i < 6; i++) {
     const c = new THREE.Mesh(cisternGeo, golgiMat);
     const s = U((0.55 + i * 0.09) * 1e-6);
@@ -241,7 +243,7 @@ export function makeCellBand(ctx: BandContext): BandInstance {
   // ---- keratin intermediate filaments ------------------------------------
   // Tonofilament bundles — 10 nm filaments in bundles tens of nm thick, running
   // across the cytoplasm to desmosomes. The defining feature of a keratinocyte.
-  const kifGeo = new THREE.CylinderGeometry(1, 1, 1, 5, 1, true);
+  const kifGeo = new THREE.CylinderGeometry(1, 1, 1, detail(quality, 8, 5), 1, true);
   const kifMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x9fb6c9).convertSRGBToLinear(),
     roughness: 0.55,
@@ -346,7 +348,7 @@ function randomOnSphere(rng: () => number): THREE.Vector3 {
  * live at 20–50 nm and are band 7's problem; here the silhouette is the point.
  */
 function makeMitochondrionGeometry(detailScale: number): THREE.BufferGeometry {
-  const seg = Math.max(6, Math.round(16 * detailScale));
+  const seg = Math.max(8, Math.round(24 * detailScale));
   const geo = new THREE.CapsuleGeometry(1, 1.8, seg, seg * 2);
   geo.rotateX(Math.PI / 2);
   const pos = geo.attributes.position as THREE.BufferAttribute;

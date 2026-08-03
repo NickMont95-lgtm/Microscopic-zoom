@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { BandContext, BandFrame, BandInstance } from '../core/types.ts';
-import { disposeScene, makeRail, makeRng, makeScaffold } from './common.ts';
+import { disposeScene, makeRail, makeRng, makeScaffold, subdiv } from './common.ts';
 import { makeSkinPatch } from './skin.ts';
 import { buildMite, type Mite } from './demodex.ts';
 
@@ -89,7 +89,7 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
   follicle.add(tube);
 
   // The hair shaft running down the middle.
-  const hairGeo = new THREE.CylinderGeometry(HAIR_R * L, HAIR_R * 0.85 * L, FOLLICLE_DEPTH * L, 12);
+  const hairGeo = new THREE.CylinderGeometry(HAIR_R * L, HAIR_R * 0.85 * L, FOLLICLE_DEPTH * L, 20);
   hairGeo.rotateX(Math.PI / 2);
   const hairMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xa88e72).convertSRGBToLinear(),
@@ -101,7 +101,7 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
 
   // ---- sebum -------------------------------------------------------------
   const rng = makeRng(4404);
-  const sebumGeo = new THREE.IcosahedronGeometry(1, quality.detailScale > 0.6 ? 2 : 1);
+  const sebumGeo = new THREE.IcosahedronGeometry(1, subdiv(quality, 3, 1));
   // Plain transparency rather than MeshPhysicalMaterial transmission.
   // Transmission makes three.js render the whole scene an extra time into a
   // back buffer every frame, per material that uses it. Across bands 4-8 that
@@ -109,10 +109,11 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
   // nobody can see through an already-translucent stack.
   const sebumMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xf0dc9a).convertSRGBToLinear(),
-    roughness: 0.10,
+    roughness: 0.22,
     metalness: 0,
     transparent: true,
-    opacity: 0.6,
+    opacity: 0.42,
+    depthWrite: false,
   });
   const SEBUM_N = Math.max(10, Math.round(48 * quality.instanceScale));
   const sebum = new THREE.InstancedMesh(sebumGeo, sebumMat, SEBUM_N);
@@ -124,7 +125,7 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
     const z = -rng() * FOLLICLE_DEPTH * 0.55;
     sebumData.push({
       p: new THREE.Vector3(Math.cos(a) * rr * L, Math.sin(a) * rr * L, z * L),
-      r: (3e-6 + rng() * 9e-6) * L,
+      r: (2e-6 + rng() * 5.5e-6) * L,
       ph: rng() * 6.28,
     });
   }
@@ -244,17 +245,23 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
  * pipe.
  */
 function makeFollicleGeometry(detailScale: number): THREE.BufferGeometry {
-  const rings = Math.max(24, Math.round(72 * detailScale));
-  const radial = Math.max(16, Math.round(40 * detailScale));
+  const rings = Math.max(32, Math.round(110 * detailScale));
+  const radial = Math.max(20, Math.round(64 * detailScale));
   const pos: number[] = [];
   const idx: number[] = [];
-  const rng = makeRng(999);
 
-  // Pre-generate per-ring and per-column noise so the wall is consistent.
-  const bumps: number[] = [];
-  for (let i = 0; i <= rings; i++) {
-    for (let j = 0; j <= radial; j++) bumps.push(rng());
-  }
+  // The wall relief must be a SMOOTH FUNCTION OF POSITION, not per-vertex
+  // random values. White noise per vertex looks passable at low resolution and
+  // shatters into spikes as the mesh gets finer — every added vertex becomes a
+  // new independent spike rather than resolving the surface better. A smooth
+  // field converges instead: more vertices simply describe the same wall more
+  // accurately, which is what raising detail is supposed to do.
+  const wall = (a: number, t: number): number =>
+    0.86 +
+    0.085 * Math.sin(a * 3.0 + t * 9.0) +
+    0.06 * Math.sin(a * 7.0 - t * 14.0) +
+    0.045 * Math.sin(a * 11.0 + t * 5.0) * Math.cos(a * 2.0 - t * 21.0) +
+    0.03 * Math.sin(a * 17.0 + t * 33.0);
 
   for (let i = 0; i <= rings; i++) {
     const t = i / rings;
@@ -267,8 +274,7 @@ function makeFollicleGeometry(detailScale: number): THREE.BufferGeometry {
     const r = FOLLICLE_DEEP_R + (FOLLICLE_MOUTH_R - FOLLICLE_DEEP_R) * flare;
     for (let j = 0; j <= radial; j++) {
       const a = (j / radial) * Math.PI * 2;
-      const b = bumps[i * (radial + 1) + (j % radial)];
-      const rr = r * (0.88 + 0.24 * b + 0.05 * Math.sin(a * 7 + t * 20));
+      const rr = r * wall(a, t);
       pos.push(Math.cos(a) * rr * L, Math.sin(a) * rr * L, z * L);
     }
   }
