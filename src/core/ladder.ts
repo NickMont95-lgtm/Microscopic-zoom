@@ -4,6 +4,15 @@ import { makeRoomBand } from '../bands/b01-room.ts';
 import { makeCheekBand } from '../bands/b02-cheek.ts';
 import { makePoresBand } from '../bands/b03-pores.ts';
 import { makeDemodexBand } from '../bands/b04-demodex.ts';
+import { makeMicrobiomeBand } from '../bands/b05-microbiome.ts';
+import { makeCellBand } from '../bands/b06-cell.ts';
+import { makeCytoskeletonBand } from '../bands/b07-cytoskeleton.ts';
+import { makeVirusBand } from '../bands/b08-virus.ts';
+import { makeDnaBand } from '../bands/b09-dna.ts';
+import { makeAtomsBand } from '../bands/b10-atoms.ts';
+import { makeVoidBand } from '../bands/b11-void.ts';
+import { makeProtonBand } from '../bands/b12-proton.ts';
+import { makeFoamBand } from '../bands/b13-foam.ts';
 
 /**
  * THE ZOOM LADDER
@@ -89,7 +98,7 @@ export const LADDER: BandDef[] = [
     logBot: -5.2,
     localTopWidth: 60,
     localSpan: 1.15,
-    build: makePlaceholderBand,
+    build: makeMicrobiomeBand,
   },
   {
     index: 6,
@@ -100,7 +109,7 @@ export const LADDER: BandDef[] = [
     logBot: -6.0,
     localTopWidth: 60,
     localSpan: 1.0,
-    build: makePlaceholderBand,
+    build: makeCellBand,
   },
   {
     index: 7,
@@ -111,7 +120,7 @@ export const LADDER: BandDef[] = [
     logBot: -7.0,
     localTopWidth: 60,
     localSpan: 1.25,
-    build: makePlaceholderBand,
+    build: makeCytoskeletonBand,
   },
   {
     index: 8,
@@ -122,7 +131,7 @@ export const LADDER: BandDef[] = [
     logBot: -7.6,
     localTopWidth: 60,
     localSpan: 0.85,
-    build: makePlaceholderBand,
+    build: makeVirusBand,
   },
   {
     index: 9,
@@ -133,7 +142,7 @@ export const LADDER: BandDef[] = [
     logBot: -8.82,
     localTopWidth: 60,
     localSpan: 1.47,
-    build: makePlaceholderBand,
+    build: makeDnaBand,
   },
   {
     index: 10,
@@ -144,7 +153,7 @@ export const LADDER: BandDef[] = [
     logBot: -10.1,
     localTopWidth: 60,
     localSpan: 1.53,
-    build: makePlaceholderBand,
+    build: makeAtomsBand,
   },
   {
     index: 11,
@@ -156,7 +165,7 @@ export const LADDER: BandDef[] = [
     localTopWidth: 60,
     localSpan: 1.0,
     wrapDecades: 1,
-    build: makePlaceholderBand,
+    build: makeVoidBand,
   },
   {
     index: 12,
@@ -168,7 +177,7 @@ export const LADDER: BandDef[] = [
     localTopWidth: 60,
     localSpan: 1.0,
     wrapDecades: 1,
-    build: makePlaceholderBand,
+    build: makeProtonBand,
   },
   {
     index: 13,
@@ -181,7 +190,7 @@ export const LADDER: BandDef[] = [
     localSpan: 1.0,
     wrapDecades: 1,
     speculative: true,
-    build: makePlaceholderBand,
+    build: makeFoamBand,
   },
 ];
 
