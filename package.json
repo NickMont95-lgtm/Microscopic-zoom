@@ -1,0 +1,20 @@
+{
+  "name": "microscopic-zoom",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.185.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.0"
+  }
+}
