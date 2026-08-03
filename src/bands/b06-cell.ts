@@ -72,13 +72,16 @@ export function makeCellBand(ctx: BandContext): BandInstance {
   // A translucent sheet the camera passes through in the first part of the
   // band. Drawn as a large disc so it reads as a wall, not an object.
   const memGeo = new THREE.SphereGeometry(U(15e-6), 48, 32);
-  const memMat = new THREE.MeshPhysicalMaterial({
+  // Plain transparency rather than MeshPhysicalMaterial transmission.
+  // Transmission makes three.js render the whole scene an extra time into a
+  // back buffer every frame, per material that uses it. Across bands 4-8 that
+  // was several full extra passes for droplets and membranes whose refraction
+  // nobody can see through an already-translucent stack.
+  const memMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x7fd4c0).convertSRGBToLinear(),
-    roughness: 0.22,
-    transmission: 0.72,
-    thickness: 0.4,
+    roughness: 0.25,
     transparent: true,
-    opacity: 0.5,
+    opacity: 0.4,
     side: THREE.BackSide,
     depthWrite: false,
   });
@@ -93,13 +96,11 @@ export function makeCellBand(ctx: BandContext): BandInstance {
 
   const NUC_R = U(3.0e-6); // 6 µm across
   const nucGeo = new THREE.SphereGeometry(NUC_R, detail(quality, 72, 28), detail(quality, 48, 20));
-  const nucMat = new THREE.MeshPhysicalMaterial({
+  const nucMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x8b7fd0).convertSRGBToLinear(),
     roughness: 0.42,
-    transmission: 0.32,
-    thickness: 2,
     transparent: true,
-    opacity: 0.88,
+    opacity: 0.8,
   });
   const nucleus = new THREE.Mesh(nucGeo, nucMat);
   nucleusGroup.add(nucleus);

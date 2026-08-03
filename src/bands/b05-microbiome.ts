@@ -232,13 +232,16 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
 
   // ---- sebum --------------------------------------------------------------
   const sebGeo = new THREE.IcosahedronGeometry(1, detail(quality, 2, 1));
-  const sebMat = new THREE.MeshPhysicalMaterial({
+  // Plain transparency rather than MeshPhysicalMaterial transmission.
+  // Transmission makes three.js render the whole scene an extra time into a
+  // back buffer every frame, per material that uses it. Across bands 4-8 that
+  // was several full extra passes for droplets and membranes whose refraction
+  // nobody can see through an already-translucent stack.
+  const sebMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xf2e2a8).convertSRGBToLinear(),
-    roughness: 0.06,
-    transmission: 0.6,
-    thickness: 1.5,
+    roughness: 0.09,
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.55,
   });
   const SEB = count(quality, 40, 10);
   const seb = new THREE.InstancedMesh(sebGeo, sebMat, SEB);

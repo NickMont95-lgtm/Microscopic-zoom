@@ -102,14 +102,17 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
   // ---- sebum -------------------------------------------------------------
   const rng = makeRng(4404);
   const sebumGeo = new THREE.IcosahedronGeometry(1, quality.detailScale > 0.6 ? 2 : 1);
-  const sebumMat = new THREE.MeshPhysicalMaterial({
+  // Plain transparency rather than MeshPhysicalMaterial transmission.
+  // Transmission makes three.js render the whole scene an extra time into a
+  // back buffer every frame, per material that uses it. Across bands 4-8 that
+  // was several full extra passes for droplets and membranes whose refraction
+  // nobody can see through an already-translucent stack.
+  const sebumMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xf0dc9a).convertSRGBToLinear(),
-    roughness: 0.08,
+    roughness: 0.10,
     metalness: 0,
-    transmission: 0.55,
-    thickness: 2,
     transparent: true,
-    opacity: 0.75,
+    opacity: 0.6,
   });
   const SEBUM_N = Math.max(10, Math.round(48 * quality.instanceScale));
   const sebum = new THREE.InstancedMesh(sebumGeo, sebumMat, SEBUM_N);

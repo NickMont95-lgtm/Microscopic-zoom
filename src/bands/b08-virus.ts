@@ -77,13 +77,16 @@ export function makeVirusBand(ctx: BandContext): BandInstance {
 
   // ---- nuclear envelope and a pore complex --------------------------------
   // The wall we are heading for. The pore is the door into band 9.
-  const envMat = new THREE.MeshPhysicalMaterial({
+  // Plain transparency rather than MeshPhysicalMaterial transmission.
+  // Transmission makes three.js render the whole scene an extra time into a
+  // back buffer every frame, per material that uses it. Across bands 4-8 that
+  // was several full extra passes for droplets and membranes whose refraction
+  // nobody can see through an already-translucent stack.
+  const envMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x6a5fa8).convertSRGBToLinear(),
     roughness: 0.45,
-    transmission: 0.25,
-    thickness: 1,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.88,
     side: THREE.DoubleSide,
   });
   const envelope = new THREE.Mesh(new THREE.PlaneGeometry(U(1400e-9), U(1400e-9), 24, 24), envMat);

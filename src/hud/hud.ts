@@ -98,10 +98,17 @@ export class Hud {
     this.statsEl.style.display = this.showStats ? 'block' : 'none';
   }
 
-  update(status: WorldStatus, idleTime: number, dt: number, extra: string): void {
-    // FPS, averaged over half-second windows.
+  update(
+    status: WorldStatus,
+    idleTime: number,
+    dt: number,
+    extra: string,
+    rawDt: number = dt,
+  ): void {
+    // Frame rate is measured from WALL-CLOCK time, not the clamped simulation
+    // step, so a struggling machine reports what it is really managing.
     this.frames++;
-    this.fpsAccum += dt;
+    this.fpsAccum += rawDt;
     if (this.fpsAccum >= 0.5) {
       this.fps = this.frames / this.fpsAccum;
       this.frames = 0;
@@ -109,6 +116,7 @@ export class Hud {
       if (this.showStats) {
         this.fpsEl.textContent = `${this.fps.toFixed(0)} fps`;
         this.fpsEl.classList.toggle('warn', this.fps < 50);
+        this.fpsEl.textContent = `${this.fps < 10 ? this.fps.toFixed(1) : this.fps.toFixed(0)} fps`;
       }
     }
     if (this.showStats) this.infoEl.textContent = extra;

@@ -262,6 +262,7 @@ export function makeSkinPatch(opts: SkinPatchOptions): SkinPatch {
          varying vec3 vSurfT;
          varying vec3 vSurfB;
          varying vec3 vSurfN;
+         float vHeightC;
          ${SKIN_FIELD_GLSL}`,
       )
       .replace(
@@ -271,11 +272,17 @@ export function makeSkinPatch(opts: SkinPatchOptions): SkinPatch {
          // instead of being frozen into the mesh.
          float faceDirection = gl_FrontFacing ? 1.0 : -1.0;
          float eps = max(uPixelMetres * 1.2, uPatchMetres * 1.0e-4);
-         float hL = skHeight(vFieldM - vec2(eps, 0.0));
+         // FORWARD differences, not central. Central differencing needs four
+         // extra evaluations of the height field; forward needs two, and the
+         // centre sample is then reused for ambient occlusion below. That takes
+         // this shader from five field evaluations per pixel to three, and each
+         // one runs two Worley lattices over nine cells. The half-texel bias
+         // forward differencing introduces is invisible at any of these scales.
+         float hC = skHeight(vFieldM);
          float hR = skHeight(vFieldM + vec2(eps, 0.0));
-         float hD = skHeight(vFieldM - vec2(0.0, eps));
          float hU = skHeight(vFieldM + vec2(0.0, eps));
-         vec3 nObj = normalize(vec3(-(hR - hL) / (2.0 * eps), -(hU - hD) / (2.0 * eps), 1.0));
+         vec3 nObj = normalize(vec3(-(hR - hC) / eps, -(hU - hC) / eps, 1.0));
+         vHeightC = hC;
          vec3 normal = normalize(nObj.x * vSurfT + nObj.y * vSurfB + nObj.z * vSurfN);
          normal *= faceDirection;
          vec3 nonPerturbedNormal = normal;`,
@@ -297,7 +304,7 @@ export function makeSkinPatch(opts: SkinPatchOptions): SkinPatch {
          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.10, 0.90, 0.88), ery * 0.22);
          // Grooves read darker: less light escapes from inside a crevice. Kept
          // gentle — a hard version turns the microrelief into black cracks.
-         float ao = smoothstep(-120.0e-6, 10.0e-6, skHeight(vFieldM));
+         float ao = smoothstep(-120.0e-6, 10.0e-6, vHeightC);
          diffuseColor.rgb *= mix(0.62, 1.0, ao);`,
       );
   };

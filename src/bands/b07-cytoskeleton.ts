@@ -125,11 +125,14 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
   mtGroup.add(tubA, tubB);
 
   // ---- kinesin and its cargo ---------------------------------------------
-  const cargoMat = new THREE.MeshPhysicalMaterial({
+  // Plain transparency rather than MeshPhysicalMaterial transmission.
+  // Transmission makes three.js render the whole scene an extra time into a
+  // back buffer every frame, per material that uses it. Across bands 4-8 that
+  // was several full extra passes for droplets and membranes whose refraction
+  // nobody can see through an already-translucent stack.
+  const cargoMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xf0c27a).convertSRGBToLinear(),
     roughness: 0.3,
-    transmission: 0.25,
-    thickness: 1,
     transparent: true,
     opacity: 0.92,
   });
@@ -266,13 +269,11 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
   mito.rotation.set(0.3, 0.7, 0.2);
   scene.add(mito);
 
-  const outerMat = new THREE.MeshPhysicalMaterial({
+  const outerMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xe07a5f).convertSRGBToLinear(),
     roughness: 0.4,
-    transmission: 0.3,
-    thickness: 1,
     transparent: true,
-    opacity: 0.6,
+    opacity: 0.55,
     side: THREE.DoubleSide,
   });
   const outer = new THREE.Mesh(new THREE.CapsuleGeometry(U(180e-9), U(560e-9), 8, 24), outerMat);

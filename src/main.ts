@@ -120,22 +120,31 @@ const timer = new THREE.Timer();
 
 function frame(): void {
   timer.update();
-  // Clamp dt so an alt-tab, a slow band build or a backgrounded tab cannot
-  // fling the zoom spring across ten decades in a single step.
-  const dt = Math.min(timer.getDelta(), 1 / 20);
+  // `rawDt` is wall-clock; `dt` is clamped so that an alt-tab, a slow band
+  // build or a backgrounded tab cannot fling the zoom spring across ten decades
+  // in a single step.
+  //
+  // These must not be confused. Simulation uses the clamped value; the frame
+  // rate readout and the adaptive-quality check use the real one. Measuring
+  // frame rate from the clamped dt makes it frames-per-SIMULATED-second, which
+  // saturates at 20 and cheerfully reports 20 fps on a machine actually
+  // managing two — exactly when you most need to be told otherwise.
+  const rawDt = timer.getDelta();
+  const dt = Math.min(rawDt, 1 / 20);
 
   input.update(dt);
   const [lookX, lookY] = input.look;
   const status = world.update(input.logScale, lookX, lookY, dt);
   world.render();
 
+
   const info =
     `band ${status.upper.index}` +
     (status.lower ? ` → ${status.lower.index}  ${(status.blend * 100).toFixed(0)}%` : '') +
     `\nlog ${status.logScale.toFixed(3)} · live ${status.builtCount}`;
-  hud.update(status, input.idleTime, dt, info);
+  hud.update(status, input.idleTime, dt, info, rawDt);
 
-  trackPerformance(dt);
+  trackPerformance(rawDt);
   requestAnimationFrame(frame);
 }
 
