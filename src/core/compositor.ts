@@ -98,6 +98,8 @@ export class Compositor {
       colorSpace: THREE.LinearSRGBColorSpace,
       depthBuffer: true,
       stencilBuffer: false,
+      // Linear on both, so a supersampled target resolves smoothly when the
+      // final blit scales it down to canvas size.
       minFilter: THREE.LinearFilter,
       magFilter: THREE.LinearFilter,
       samples: this.samples,

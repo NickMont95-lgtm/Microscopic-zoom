@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { BandFrame, QualitySettings } from '../core/types.ts';
-import { detail, metresPerUnit } from './common.ts';
+import { detailCapped, metresPerUnit } from './common.ts';
 
 /**
  * Procedural skin surface.
@@ -210,9 +210,9 @@ function pixelWidth(): number {
 export function makeSkinPatch(opts: SkinPatchOptions): SkinPatch {
   const q = opts.quality;
   // Every vertex of this grid evaluates the height field, which runs two Worley
-  // lattices over nine cells each. Raising it is far more expensive than the
-  // triangle count suggests.
-  const seg = detail(q, 240, 80);
+  // lattices over nine cells each, so this is far more expensive than the
+  // triangle count suggests and is capped rather than left to scale freely.
+  const seg = detailCapped(q, 260, 80, 400);
   const geo = new THREE.PlaneGeometry(1, 1, seg, seg);
 
   const material = new THREE.MeshStandardMaterial({
@@ -412,7 +412,7 @@ export interface HairField {
 export function makeHairField(opts: HairFieldOptions): HairField {
   const q = opts.quality;
   const n = Math.max(6, Math.round(opts.count * q.instanceScale));
-  const geo = new THREE.CylinderGeometry(0.35, 1, 1, detail(q, 10, 5), 1, true);
+  const geo = new THREE.CylinderGeometry(0.35, 1, 1, detailCapped(q, 10, 5, 16), 1, true);
   // Move the pivot to the base so instances can be scaled by length directly.
   geo.translate(0, 0.5, 0);
 

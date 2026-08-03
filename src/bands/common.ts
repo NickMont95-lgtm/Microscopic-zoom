@@ -445,6 +445,23 @@ export function detail(quality: QualitySettings, n: number, floor = 3): number {
 }
 
 /**
+ * Like `detail()`, but with a ceiling.
+ *
+ * For geometry that is instanced in the thousands, or whose vertices each run
+ * an expensive shader, the multiplier has to stop somewhere: a tubulin sphere
+ * is ten thousand instances, so every extra segment is tens of thousands of
+ * triangles, and the skin grid evaluates two Worley lattices per vertex.
+ */
+export function detailCapped(
+  quality: QualitySettings,
+  n: number,
+  floor: number,
+  ceiling: number,
+): number {
+  return Math.min(ceiling, Math.max(floor, Math.round(n * quality.detailScale)));
+}
+
+/**
  * Shifts a SUBDIVISION LEVEL by whole steps.
  *
  * Icosahedron and similar recursive geometries have 4^level faces, so scaling
@@ -454,7 +471,7 @@ export function detail(quality: QualitySettings, n: number, floor = 3): number {
  */
 export function subdiv(quality: QualitySettings, base: number, floor = 0): number {
   const d = quality.detailScale;
-  const bump = d >= 2.0 ? 2 : d >= 1.25 ? 1 : d >= 0.8 ? 0 : -1;
+  const bump = d >= 2.4 ? 2 : d >= 1.5 ? 1 : d >= 0.8 ? 0 : -1;
   return Math.max(floor, base + bump);
 }
 

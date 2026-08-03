@@ -11,6 +11,14 @@ export interface QualitySettings {
   maxPixelRatio: number;
   /** Subdivision multiplier for procedural geometry. */
   detailScale: number;
+  /**
+   * Supersampling factor for the band render targets. Above 1 the bands are
+   * rendered larger than the canvas and downsampled by the compositor's blit,
+   * which sharpens everything on screen including edges MSAA cannot help with
+   * — shader detail, thin geometry, the skin field. It is also the most
+   * expensive knob here, since it multiplies every fragment in the frame.
+   */
+  renderScale: number;
 }
 
 /**
@@ -20,10 +28,10 @@ export interface QualitySettings {
  * subdivision level by 1.6 turns 80k triangles into 21 million.
  */
 export const QUALITY_PRESETS: Record<QualityLevel, QualitySettings> = {
-  low: { level: 'low', instanceScale: 0.35, maxPixelRatio: 1, detailScale: 0.55 },
-  medium: { level: 'medium', instanceScale: 0.7, maxPixelRatio: 1.5, detailScale: 0.85 },
-  high: { level: 'high', instanceScale: 1.25, maxPixelRatio: 2, detailScale: 1.3 },
-  ultra: { level: 'ultra', instanceScale: 1.9, maxPixelRatio: 2, detailScale: 1.9 },
+  low: { level: 'low', instanceScale: 0.35, maxPixelRatio: 1, detailScale: 0.55, renderScale: 1 },
+  medium: { level: 'medium', instanceScale: 0.7, maxPixelRatio: 1.5, detailScale: 0.85, renderScale: 1 },
+  high: { level: 'high', instanceScale: 1.7, maxPixelRatio: 2, detailScale: 1.7, renderScale: 1 },
+  ultra: { level: 'ultra', instanceScale: 2.6, maxPixelRatio: 2, detailScale: 2.6, renderScale: 1.25 },
 };
 
 /** Everything a band needs at construction time. */

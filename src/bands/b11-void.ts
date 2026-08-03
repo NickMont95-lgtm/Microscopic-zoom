@@ -98,7 +98,7 @@ export function makeVoidBand(ctx: BandContext): BandInstance {
   // Its job is to give the eye just enough to register that it is still moving.
   const field = makeField({
     quality,
-    slices: 9,
+    slices: 15,
     extent: 26,
     depth: 60,
     density: 0.14,

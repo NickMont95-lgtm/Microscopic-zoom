@@ -248,7 +248,7 @@ function buildAdenovirus(detailScale: number): {
 } {
   const group = new THREE.Group();
 
-  const shellGeo = new THREE.IcosahedronGeometry(U(ADENO_R * 0.94), 1);
+  const shellGeo = new THREE.IcosahedronGeometry(U(ADENO_R * 0.94), 2);
   const shellMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x8fa8d8).convertSRGBToLinear(),
     roughness: 0.5,
@@ -266,7 +266,7 @@ function buildAdenovirus(detailScale: number): {
   });
   const base = new THREE.IcosahedronGeometry(1, 0);
   const pos = base.attributes.position as THREE.BufferAttribute;
-  const rows = Math.max(3, Math.round(6 * detailScale));
+  const rows = Math.max(3, Math.round(8 * detailScale));
   const hexList: THREE.Matrix4[] = [];
   const d = new THREE.Object3D();
   const a = new THREE.Vector3();

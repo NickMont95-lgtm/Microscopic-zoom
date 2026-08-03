@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { BandContext, BandFrame, BandInstance } from '../core/types.ts';
 import {
   applyGpuMotion,
+  detailCapped,
   count,
   detail,
   disposeScene,
@@ -82,7 +83,11 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
   // Around ten thousand instances, so each extra segment costs thousands of
   // triangles. Radius 2.2 nm so neighbouring monomers just touch at their 4 nm
   // spacing rather than leaving the protofilament looking like a bead chain.
-  const tubulinGeo = new THREE.SphereGeometry(U(2.2e-9), detail(quality, 9, 5), detail(quality, 7, 4));
+  const tubulinGeo = new THREE.SphereGeometry(
+    U(2.2e-9),
+    detailCapped(quality, 10, 5, 16),
+    detailCapped(quality, 8, 4, 12),
+  );
   const tubulinA = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0x6fa8dc).convertSRGBToLinear(),
     roughness: 0.42,
@@ -164,7 +169,7 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
   });
 
   // ---- actin filaments ---------------------------------------------------
-  const actinGeo = new THREE.SphereGeometry(U(2.7e-9), detail(quality, 9, 6), detail(quality, 7, 5));
+  const actinGeo = new THREE.SphereGeometry(U(2.7e-9), detailCapped(quality, 10, 6, 16), detailCapped(quality, 8, 5, 12));
   const actinMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xa8d8a0).convertSRGBToLinear(),
     roughness: 0.5,

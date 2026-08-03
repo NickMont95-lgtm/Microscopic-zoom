@@ -82,7 +82,7 @@ export function makePoresBand(ctx: BandContext): BandInstance {
   // Irregular polygonal plates ~35 µm across and ~0.7 µm thick. Most lie flat;
   // some have lifted at one edge and are about to come away.
   const rng = makeRng(3103);
-  const FLAKES = Math.max(40, Math.round(420 * quality.instanceScale));
+  const FLAKES = Math.max(40, Math.round(560 * quality.instanceScale));
   const flakeGeo = makeCorneocyteGeometry();
   const flakeMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xe4c3ab).convertSRGBToLinear(),

@@ -77,12 +77,17 @@ export class World {
 
   setSize(width: number, height: number, pixelRatio: number): void {
     this.aspect = width / Math.max(1, height);
-    this.compositor.setSize(width, height, pixelRatio);
+    // Bands render at pixelRatio * renderScale and are downsampled by the
+    // compositor blit. Only the band targets are supersampled; the fullscreen
+    // dissolve still runs at canvas resolution.
+    this.compositor.setSize(width, height, pixelRatio * this.quality.renderScale);
   }
 
   setQuality(q: QualitySettings): void {
     this.quality = q;
     this.compositor.setSamples(msaaFor(q));
+    // setSize() is called again by the caller's resize(), which picks up the
+    // new renderScale.
     // Rebuild everything so instance counts and geometry detail take effect.
     for (const [i, inst] of this.instances) {
       inst.dispose();
@@ -268,6 +273,11 @@ export class World {
     } else {
       this.compositor.present(1, 0, this._tintA, this._tintB);
     }
+  }
+
+  /** Live band instances. Diagnostics only. */
+  liveInstances(): BandInstance[] {
+    return this.slots.map((s) => s.instance);
   }
 
   dispose(): void {

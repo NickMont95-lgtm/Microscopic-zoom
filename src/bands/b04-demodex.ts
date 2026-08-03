@@ -89,7 +89,7 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
   follicle.add(tube);
 
   // The hair shaft running down the middle.
-  const hairGeo = new THREE.CylinderGeometry(HAIR_R * L, HAIR_R * 0.85 * L, FOLLICLE_DEPTH * L, 20);
+  const hairGeo = new THREE.CylinderGeometry(HAIR_R * L, HAIR_R * 0.85 * L, FOLLICLE_DEPTH * L, 32);
   hairGeo.rotateX(Math.PI / 2);
   const hairMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0xa88e72).convertSRGBToLinear(),
@@ -245,8 +245,8 @@ export function makeDemodexBand(ctx: BandContext): BandInstance {
  * pipe.
  */
 function makeFollicleGeometry(detailScale: number): THREE.BufferGeometry {
-  const rings = Math.max(32, Math.round(110 * detailScale));
-  const radial = Math.max(20, Math.round(64 * detailScale));
+  const rings = Math.max(32, Math.round(170 * detailScale));
+  const radial = Math.max(20, Math.round(96 * detailScale));
   const pos: number[] = [];
   const idx: number[] = [];
 

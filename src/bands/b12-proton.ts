@@ -62,7 +62,7 @@ export function makeProtonBand(ctx: BandContext): BandInstance {
   // dominant physical reality: most of the proton's mass is field energy.
   const sea = makeField({
     quality,
-    slices: 16,
+    slices: 26,
     extent: 30,
     depth: 70,
     density: 0.30,

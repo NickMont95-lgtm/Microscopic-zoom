@@ -128,7 +128,10 @@ export interface Field {
 
 export function makeField(opts: FieldOptions): Field {
   const q = opts.quality;
-  const n = Math.max(5, Math.round((opts.slices ?? 14) * (0.45 + 0.55 * q.detailScale)));
+  // Slice count scales conservatively. Each slice is a full-screen additive
+  // layer running a four-octave 3D fbm, so this is pure fill cost and doubling
+  // it halves the band's frame rate.
+  const n = Math.max(5, Math.round((opts.slices ?? 14) * (0.65 + 0.35 * q.detailScale)));
 
   // One big buffer of n quads, each tagged with its slice index.
   const positions: number[] = [];

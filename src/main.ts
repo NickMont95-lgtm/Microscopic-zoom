@@ -194,10 +194,33 @@ requestAnimationFrame(frame);
 // the zoom to an exact log scale with animation frozen, so that consecutive
 // frames differ only because of the band hand-off.
 if (import.meta.env.DEV) {
+  // Exposed for the diagnostic harness: renderer.info gives per-frame draw
+  // calls and triangle counts, which diagnose cost far better than an fps
+  // sample does on a slow software rasteriser.
+  (window as unknown as Record<string, unknown>).__renderer = renderer;
   (window as unknown as Record<string, unknown>).__zoom = {
     snap: (log: number) => input.snapTo(log),
     freeze: (on: boolean) => {
       world.timeScale = on ? 0 : 1;
+    },
+    // Static geometry load of the live bands: triangles actually submitted and
+    // how many separate draws they take. A far better diagnostic than an fps
+    // sample when the rasteriser is the bottleneck.
+    load: () => {
+      let tris = 0;
+      let draws = 0;
+      for (const inst of world.liveInstances()) {
+        inst.scene.traverse((o: THREE.Object3D) => {
+          const m = o as THREE.Mesh & { count?: number; isInstancedMesh?: boolean };
+          const g = m.geometry as THREE.BufferGeometry | undefined;
+          if (!g || !m.visible) return;
+          const idx = g.getIndex();
+          const n = idx ? idx.count / 3 : (g.getAttribute('position')?.count ?? 0) / 3;
+          tris += n * (m.isInstancedMesh ? (m.count ?? 1) : 1);
+          draws++;
+        });
+      }
+      return { triangles: Math.round(tris), draws };
     },
     state: () => ({
       log: input.logScale,

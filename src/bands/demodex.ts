@@ -28,7 +28,7 @@ import { makeRng } from './common.ts';
 
 // Radial segments around the body. Twelve read as a faceted tube at the top
 // of band 4, where the animal spans most of the frame.
-const RADIAL = 24;
+const RADIAL = 40;
 
 /** Radius profile along the body, t = 0 at the tail tip, 1 at the mouthparts. */
 function bodyRadius(t: number): number {
@@ -67,7 +67,7 @@ function buildBodyGeometry(segments: number): THREE.BufferGeometry {
       // segment count: at 40 rings over this many segments the annulation
       // aliased into a stack of visibly separate hoops rather than reading as
       // fine surface texture.
-      r *= 1 + 0.045 * Math.sin(t * 18 * Math.PI * 2);
+      r *= 1 + 0.042 * Math.sin(t * 26 * Math.PI * 2);
     }
 
     // Slightly flattened dorsoventrally, as the real animal is.
@@ -155,21 +155,21 @@ export function buildMite(opts: MiteOptions): Mite {
     // a far worse error than losing a little translucency.
   });
 
-  const bodyGeo = buildBodyGeometry(Math.max(64, Math.round(200 * (opts.detail ?? 1))));
+  const bodyGeo = buildBodyGeometry(Math.max(64, Math.round(280 * (opts.detail ?? 1))));
   const body = new THREE.Mesh(bodyGeo, mat);
   body.scale.set(opts.length * 0.115, opts.length * 0.115, opts.length);
   bodyGroup.add(body);
 
   // ---- gnathosoma --------------------------------------------------------
   // Short trapezoidal capitulum with a pair of palps, at the anterior tip.
-  const gnGeo = new THREE.CylinderGeometry(0.36, 0.52, 1, 16);
+  const gnGeo = new THREE.CylinderGeometry(0.36, 0.52, 1, 24);
   gnGeo.rotateX(Math.PI / 2);
   const gnatho = new THREE.Mesh(gnGeo, mat);
   gnatho.position.z = opts.length * 1.005;
   gnatho.scale.set(opts.length * 0.058, opts.length * 0.048, opts.length * 0.042);
   bodyGroup.add(gnatho);
 
-  const palpGeo = new THREE.CapsuleGeometry(0.3, 1.0, 4, 10);
+  const palpGeo = new THREE.CapsuleGeometry(0.3, 1.0, 6, 16);
   palpGeo.rotateX(Math.PI / 2);
   const palps: THREE.Mesh[] = [];
   for (const sx of [-1, 1]) {
@@ -184,10 +184,10 @@ export function buildMite(opts: MiteOptions): Mite {
   // FOUR PAIRS, all on the podosoma — the anterior third. Each is short,
   // three-segmented and ends in a claw. They project laterally and ventrally.
   const legGroups: { pivot: THREE.Group; phase: number; side: number }[] = [];
-  const coxaGeo = new THREE.CapsuleGeometry(0.32, 0.5, 4, 10);
-  const femurGeo = new THREE.CapsuleGeometry(0.26, 0.6, 4, 10);
-  const tarsusGeo = new THREE.CapsuleGeometry(0.19, 0.5, 4, 9);
-  const clawGeo = new THREE.ConeGeometry(0.16, 0.45, 9);
+  const coxaGeo = new THREE.CapsuleGeometry(0.32, 0.5, 6, 16);
+  const femurGeo = new THREE.CapsuleGeometry(0.26, 0.6, 6, 16);
+  const tarsusGeo = new THREE.CapsuleGeometry(0.19, 0.5, 6, 14);
+  const clawGeo = new THREE.ConeGeometry(0.16, 0.45, 14);
 
   const LEG_Z = [0.635, 0.705, 0.775, 0.845]; // fractions of body length
   for (let pair = 0; pair < 4; pair++) {

@@ -62,7 +62,7 @@ export function makeFoamBand(ctx: BandContext): BandInstance {
   // doubled the per-pixel cost and made the band unrenderable.
   const foam = makeField({
     quality,
-    slices: 18,
+    slices: 30,
     extent: 30,
     depth: 70,
     density: 0.42,
