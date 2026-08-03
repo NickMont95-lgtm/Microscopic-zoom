@@ -56,15 +56,15 @@ export function makeCellBand(ctx: BandContext): BandInstance {
     keyColor: 0xdff0ff,
     fillColor: 0x8fd9c8,
     rimColor: 0xa8c4ff,
-    keyPower: 3.4,
-    fillPower: 1.3,
-    rimPower: 1.7,
+    keyPower: 5.2,
+    fillPower: 2.1,
+    rimPower: 2.4,
     keyOffset: [0.9, 0.9, 0.6],
     fillOffset: [-1.0, -0.6, 0.5],
     rimOffset: [-0.2, 0.4, -1.2],
     hemiSky: 0x2c4a52,
     hemiGround: 0x0a1014,
-    hemiPower: 0.55,
+    hemiPower: 0.9,
   });
   const { scene } = sc;
 

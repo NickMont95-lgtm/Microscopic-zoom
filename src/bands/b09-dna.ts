@@ -66,15 +66,15 @@ export function makeDnaBand(ctx: BandContext): BandInstance {
     keyColor: 0xe4e0ff,
     fillColor: 0x7fb0e8,
     rimColor: 0xffa8d0,
-    keyPower: 3.0,
-    fillPower: 1.4,
-    rimPower: 1.8,
+    keyPower: 4.8,
+    fillPower: 2.2,
+    rimPower: 2.5,
     keyOffset: [0.9, 0.9, 0.55],
     fillOffset: [-1.0, -0.6, 0.5],
     rimOffset: [-0.2, 0.4, -1.2],
     hemiSky: 0x2e2a52,
     hemiGround: 0x0a0812,
-    hemiPower: 0.5,
+    hemiPower: 0.85,
   });
   const { scene } = sc;
 

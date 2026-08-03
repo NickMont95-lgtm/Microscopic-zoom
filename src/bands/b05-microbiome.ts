@@ -57,15 +57,15 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
     keyColor: 0xffeede,
     fillColor: 0xffc9a4,
     rimColor: 0x9fd0ff,
-    keyPower: 4.0,
-    fillPower: 1.1,
-    rimPower: 1.9,
+    keyPower: 6.5,
+    fillPower: 2.0,
+    rimPower: 2.6,
     keyOffset: [1.1, 1.0, 0.55],
     fillOffset: [-1.0, -0.7, 0.4],
     rimOffset: [-0.3, 0.5, -1.1],
     hemiSky: 0x4d3a34,
     hemiGround: 0x0e0a0a,
-    hemiPower: 0.45,
+    hemiPower: 0.85,
   });
   const { scene } = sc;
 
@@ -78,7 +78,7 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
 
   const plateGeo = makeShingleGeometry(detail(quality, 2, 1));
   const plateMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(0xcaa48c).convertSRGBToLinear(),
+    color: new THREE.Color(0xd6b49c).convertSRGBToLinear(),
     roughness: 0.66,
     metalness: 0,
   });
@@ -96,9 +96,11 @@ export function makeMicrobiomeBand(ctx: BandContext): BandInstance {
       (rng() - 0.35) * 1.2e-6 * L,
     );
     d.rotation.set((rng() - 0.5) * 0.25, (rng() - 0.5) * 0.25, rng() * Math.PI);
+    // Wider than the pitch, so neighbours overlap like real shingles instead of
+    // leaving the wall showing through between them.
     d.scale.set(
-      (5.5e-6 + rng() * 3.5e-6) * L,
-      (5.5e-6 + rng() * 3.5e-6) * L,
+      (10.5e-6 + rng() * 4.0e-6) * L,
+      (10.5e-6 + rng() * 4.0e-6) * L,
       (0.5e-6 + rng() * 0.4e-6) * L,
     );
   });

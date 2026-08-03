@@ -59,15 +59,15 @@ export function makeCytoskeletonBand(ctx: BandContext): BandInstance {
     keyColor: 0xd8ecff,
     fillColor: 0x7fd0c4,
     rimColor: 0xb0b8ff,
-    keyPower: 3.2,
-    fillPower: 1.4,
-    rimPower: 1.8,
+    keyPower: 5.0,
+    fillPower: 2.2,
+    rimPower: 2.5,
     keyOffset: [0.9, 0.9, 0.55],
     fillOffset: [-1.0, -0.6, 0.5],
     rimOffset: [-0.2, 0.5, -1.2],
     hemiSky: 0x24424e,
     hemiGround: 0x080f14,
-    hemiPower: 0.5,
+    hemiPower: 0.85,
   });
   const { scene } = sc;
 

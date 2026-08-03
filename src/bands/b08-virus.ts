@@ -63,15 +63,15 @@ export function makeVirusBand(ctx: BandContext): BandInstance {
     keyColor: 0xdfe8ff,
     fillColor: 0x86c8d8,
     rimColor: 0xb9a8ff,
-    keyPower: 3.2,
-    fillPower: 1.3,
-    rimPower: 1.9,
+    keyPower: 5.0,
+    fillPower: 2.1,
+    rimPower: 2.6,
     keyOffset: [0.95, 0.85, 0.6],
     fillOffset: [-1.0, -0.6, 0.45],
     rimOffset: [-0.25, 0.45, -1.2],
     hemiSky: 0x28374e,
     hemiGround: 0x080a12,
-    hemiPower: 0.5,
+    hemiPower: 0.85,
   });
   const { scene } = sc;
 

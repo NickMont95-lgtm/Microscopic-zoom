@@ -108,12 +108,12 @@ export function makeAtomsBand(ctx: BandContext): BandInstance {
     keyColor: 0xffffff,
     fillColor: 0x8fa8ff,
     rimColor: 0xffb0e0,
-    keyPower: 2.6,
-    fillPower: 1.2,
-    rimPower: 1.5,
+    keyPower: 4.0,
+    fillPower: 1.9,
+    rimPower: 2.2,
     hemiSky: 0x1a1a34,
     hemiGround: 0x06060e,
-    hemiPower: 0.4,
+    hemiPower: 0.7,
   });
   const { scene } = sc;
 
